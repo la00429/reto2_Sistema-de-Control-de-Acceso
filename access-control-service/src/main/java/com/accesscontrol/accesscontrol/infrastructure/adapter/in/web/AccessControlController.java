@@ -29,7 +29,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/access")
-@CrossOrigin(origins = "*")
 @Tag(name = "Access Control", description = "API para control de acceso de empleados")
 public class AccessControlController {
     
