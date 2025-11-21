@@ -1,13 +1,22 @@
 import axios from 'axios'
 
-// Determinar la URL base del API Gateway
-// Intentar localhost primero, si falla usar 127.0.0.1
+// Configuración del API Gateway
+// En desarrollo, usar el proxy de Vite para evitar problemas de CORS
+const getBaseURL = () => {
+  if (import.meta.env.DEV) {
+    // En desarrollo, usar el proxy de Vite
+    return '/api'
+  }
+  // En producción, usar la URL completa
+  return import.meta.env.VITE_API_URL || 'http://localhost:8080'
+}
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 30000, // 30 segundos de timeout
+  timeout: 60000, // 60 segundos de timeout
   withCredentials: false // Desactivar credentials para evitar problemas de CORS
 })
 
@@ -18,23 +27,48 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    console.log('→ Petición enviada:', config.method?.toUpperCase(), config.url)
+    console.log('→ Base URL:', config.baseURL)
+    console.log('→ URL completa:', `${config.baseURL}${config.url}`)
+    console.log('→ Headers:', config.headers)
+    console.log('→ Data:', config.data)
     return config
   },
   (error) => {
+    console.error('✗ Error en interceptor de request:', error)
     return Promise.reject(error)
   }
 )
 
 // Interceptor para manejar errores de autenticación
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✓ Respuesta recibida:', response.status, response.config?.url)
+    return response
+  },
   (error) => {
     // Log detallado de errores para depuración
-    if (error.code === 'ERR_NETWORK') {
-      console.error('Error de red - El servidor no responde o hay un problema de CORS')
+    console.error('✗ Error en petición:', error.config?.method?.toUpperCase(), error.config?.url)
+    
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.error('❌ Error de red detectado')
       console.error('URL solicitada:', error.config?.url)
       console.error('Base URL:', error.config?.baseURL)
-      console.error('Verifica que el API Gateway esté corriendo en el puerto 8080')
+      console.error('URL completa:', `${error.config?.baseURL}${error.config?.url}`)
+      console.error('Método:', error.config?.method)
+      console.error('Headers:', error.config?.headers)
+      console.error('Data enviada:', error.config?.data)
+      console.error('Verifica:')
+      console.error('1. El API Gateway esté corriendo en http://localhost:8080')
+      console.error('2. El servicio de destino esté corriendo')
+      console.error('3. No haya problemas de CORS (revisa la consola de Network)')
+    }
+    
+    if (error.response) {
+      console.log('✓ El servidor respondió (aunque con error):', error.response.status)
+      console.log('Respuesta completa:', error.response)
+    } else {
+      console.error('✗ El servidor NO respondió (error.response es undefined)')
     }
     
     if (error.response?.status === 401) {

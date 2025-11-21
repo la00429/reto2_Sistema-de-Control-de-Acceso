@@ -158,55 +158,136 @@ function AccessControl() {
     }
 
     try {
-      console.log('Registrando acceso con datos:', formData)
+      console.log('=== INICIO REGISTRO DE ACCESO ===')
+      console.log('FormData completo:', formData)
+      console.log('Employee ID:', formData.employeeID)
+      console.log('Access Type:', formData.accessType)
+      console.log('Location:', formData.location)
+      console.log('Device ID:', formData.deviceId)
       
-      // Preparar los datos para enviar
-      const accessData = {
-        employeeID: formData.employeeID, // Documento del empleado (requerido)
-        accessType: formData.accessType,
-        location: formData.location,
-        deviceId: formData.deviceId
+      // Validar que employeeID no esté vacío
+      if (!formData.employeeID || formData.employeeID.trim() === '') {
+        alert('Error: El documento del empleado es requerido. Por favor selecciona un empleado.')
+        console.error('employeeID está vacío:', formData.employeeID)
+        return
       }
       
-      console.log('Datos a enviar:', accessData)
+      // Validar que todos los campos requeridos estén presentes
+      if (!formData.location || !formData.deviceId) {
+        alert('Error: Por favor completa todos los campos requeridos (ubicación y dispositivo).')
+        return
+      }
+      
+      // Preparar los datos para enviar (definir fuera del try para que esté disponible en catch)
+      const accessData = {
+        employeeID: formData.employeeID.trim(),
+        accessType: formData.accessType,
+        location: formData.location.trim(),
+        deviceId: formData.deviceId.trim()
+      }
+      
+      const endpoint = formData.accessType === 'ENTRY' ? '/access/usercheckin' : '/access/usercheckout'
+      const fullUrl = `${api.defaults.baseURL}${endpoint}`
+      
+      console.log('=== DATOS A ENVIAR ===')
+      console.log('URL completa:', fullUrl)
+      console.log('Datos JSON:', JSON.stringify(accessData, null, 2))
+      console.log('Configuración API:', {
+        baseURL: api.defaults.baseURL,
+        timeout: api.defaults.timeout
+      })
+      
+      // Enviar petición con axios
+      console.log('=== ENVIANDO PETICIÓN ===')
       
       let response
-      if (formData.accessType === 'ENTRY') {
-        response = await api.post('/access/usercheckin', accessData)
-        console.log('Respuesta de checkin:', response.data)
-      } else {
-        response = await api.post('/access/usercheckout', accessData)
-        console.log('Respuesta de checkout:', response.data)
+      try {
+        if (formData.accessType === 'ENTRY') {
+          response = await api.post('/access/usercheckin', accessData)
+        } else {
+          response = await api.post('/access/usercheckout', accessData)
+        }
+      } catch (apiError) {
+        // Re-lanzar el error para que sea manejado por el catch externo
+        throw apiError
       }
       
-      // Mostrar mensaje de éxito
+      console.log('=== RESPUESTA EXITOSA ===')
+      console.log('Status:', response.status)
+      console.log('Data:', response.data)
+      
+      // Mostrar mensaje de éxito (esto solo se ejecuta si no hubo error)
       const accessTypeText = formData.accessType === 'ENTRY' ? 'entrada' : 'salida'
       alert(`Acceso de ${accessTypeText} registrado exitosamente`)
       
       fetchAccessRecords()
       handleClose()
     } catch (error) {
-      console.error('Error registering access:', error)
+      console.error('=== CAPTURA DE ERROR GENERAL ===')
+      console.error('Error completo:', error)
       console.error('Error response:', error.response)
       console.error('Error data:', error.response?.data)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
       
       const errorMessage = extractErrorMessage(error)
       console.error('Mensaje de error extraído:', errorMessage)
       
       // Mostrar mensaje de error más descriptivo
-      if (error.response?.data?.message) {
-        alert(error.response.data.message)
-      } else if (error.response?.data?.error) {
-        alert(error.response.data.error)
-      } else if (errorMessage) {
-        alert(errorMessage)
-      } else if (error.code === 'ERR_NETWORK') {
-        const errorMsg = `Error de conexión. El servidor no está respondiendo.\n\n` +
-          `Por favor verifica que:\n` +
-          `1. El API Gateway esté corriendo en http://127.0.0.1:8080\n` +
-          `2. No haya problemas de CORS\n` +
-          `3. El servicio access-control-service esté corriendo en el puerto 8083\n\n` +
-          `Si el problema persiste, recarga la página y vuelve a intentar.`
+      if (error.response) {
+        // El servidor respondió con un error
+        const status = error.response.status
+        const data = error.response.data
+        
+        if (status === 400) {
+          // Error de validación o datos incorrectos
+          const message = data?.message || data?.error || 'Error de validación: Los datos enviados no son correctos'
+          console.error('Error 400 - Detalles completos:', data)
+          
+          let errorMsg = `Error al registrar el acceso:\n\n${message}`
+          
+          // Si hay errores de validación específicos
+          if (data?.errors) {
+            errorMsg += '\n\nErrores de validación:'
+            Object.keys(data.errors).forEach(key => {
+              errorMsg += `\n- ${key}: ${data.errors[key]}`
+            })
+          }
+          
+          // Si hay un código de alerta
+          if (data?.alertCode) {
+            errorMsg += `\n\nCódigo: ${data.alertCode}`
+          }
+          
+          alert(errorMsg)
+        } else if (status === 401) {
+          alert('Error de autenticación. Por favor inicia sesión nuevamente.')
+        } else {
+          alert(`Error del servidor (${status}): ${data?.message || data?.error || 'Error desconocido'}`)
+        }
+      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Failed to fetch') || error.message?.includes('Network Error')) {
+        let errorMsg = `Error de conexión: No se pudo conectar al servidor.\n\n`
+        
+        errorMsg += `Por favor verifica:\n`
+        errorMsg += `1. Abre la pestaña Network (Red) en las DevTools (F12)\n`
+        errorMsg += `2. Busca la petición a /access/usercheckin\n`
+        errorMsg += `3. Si ves la petición:\n`
+        errorMsg += `   - ¿Qué código de estado tiene? (200, 400, 500, etc.)\n`
+        errorMsg += `   - ¿Hay un error rojo de CORS?\n`
+        errorMsg += `4. Si NO ves la petición:\n`
+        errorMsg += `   - El navegador la está bloqueando\n`
+        errorMsg += `   - Reinicia el API Gateway\n`
+        errorMsg += `   - Recarga la página (Ctrl + F5)\n\n`
+        
+        errorMsg += `Datos de la petición:\n`
+        errorMsg += `- URL: ${api.defaults.baseURL}/access/usercheckin\n`
+        errorMsg += `- Método: POST\n`
+        if (typeof accessData !== 'undefined') {
+          errorMsg += `- Datos enviados: ${JSON.stringify(accessData)}\n`
+        } else {
+          errorMsg += `- Datos enviados: (no disponibles)\n`
+        }
+        
         alert(errorMsg)
       } else {
         alert(`Error al registrar acceso: ${error.message || 'Error desconocido'}\n\nPor favor intenta nuevamente.`)
