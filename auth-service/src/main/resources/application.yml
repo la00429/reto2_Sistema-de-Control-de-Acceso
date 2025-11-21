@@ -6,11 +6,11 @@ spring:
     name: auth-service
   data:
     mongodb:
-      host: localhost
-      port: 27018
+      host: ${MONGODB_HOST:localhost}
+      port: ${MONGODB_PORT:27018}
       database: login_db
-      username: admin
-      password: adminpassword
+      username: ${MONGODB_USER:admin}
+      password: ${MONGODB_PASSWORD:adminpassword}
       authentication-database: admin
 
 jwt:

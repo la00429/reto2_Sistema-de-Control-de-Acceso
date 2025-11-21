@@ -3,17 +3,17 @@ spring:
     name: login-service
   data:
     mongodb:
-      host: localhost
-      port: 27018
+      host: ${MONGODB_HOST:localhost}
+      port: ${MONGODB_PORT:27018}
       database: login_db
-      username: admin
-      password: adminpassword
+      username: ${MONGODB_USER:admin}
+      password: ${MONGODB_PASSWORD:adminpassword}
       authentication-database: admin
   rabbitmq:
-    host: localhost
-    port: 5673
-    username: admin
-    password: adminpassword
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5673}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:adminpassword}
 
 server:
   port: 8081
@@ -44,4 +44,4 @@ logging:
 
 auth:
   service:
-    url: http://localhost:8085
+    url: ${AUTH_SERVICE_URL:http://localhost:8085}

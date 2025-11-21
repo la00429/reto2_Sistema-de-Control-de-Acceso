@@ -5,10 +5,10 @@ spring:
   application:
     name: saga-service
   rabbitmq:
-    host: localhost
-    port: 5673
-    username: admin
-    password: adminpassword
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5673}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:adminpassword}
 
 management:
   endpoints:

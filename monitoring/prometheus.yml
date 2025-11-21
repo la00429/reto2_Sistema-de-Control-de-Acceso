@@ -7,30 +7,40 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8080']
+
   - job_name: 'login-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8081']
-
-  - job_name: 'auth-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['host.docker.internal:8085']
+      - targets: ['login-service:8081']
 
   - job_name: 'employee-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8082']
+      - targets: ['employee-service:8082']
 
   - job_name: 'access-control-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8083']
+      - targets: ['access-control-service:8083']
 
-  - job_name: 'api-gateway'
+  - job_name: 'alert-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['alert-service:8084']
+
+  - job_name: 'auth-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-service:8085']
+
+  - job_name: 'saga-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['saga-service:8086']
 
 
 

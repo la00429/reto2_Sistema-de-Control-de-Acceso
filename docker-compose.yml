@@ -98,6 +98,220 @@ services:
     depends_on:
       - prometheus
 
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: access-control-auth-service
+    ports:
+      - "8085:8085"
+    environment:
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_USER: admin
+      MONGODB_PASSWORD: adminpassword
+    networks:
+      - access-control-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Login Service
+  login-service:
+    build:
+      context: ./login-service
+      dockerfile: Dockerfile
+    container_name: access-control-login-service
+    ports:
+      - "8081:8081"
+    environment:
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_USER: admin
+      MONGODB_PASSWORD: adminpassword
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: adminpassword
+      AUTH_SERVICE_URL: http://auth-service:8085
+    networks:
+      - access-control-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Employee Service
+  employee-service:
+    build:
+      context: ./employee-service
+      dockerfile: Dockerfile
+    container_name: access-control-employee-service
+    ports:
+      - "8082:8082"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: adminpassword
+    networks:
+      - access-control-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Access Control Service
+  access-control-service:
+    build:
+      context: ./access-control-service
+      dockerfile: Dockerfile
+    container_name: access-control-access-service
+    ports:
+      - "8083:8083"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: adminpassword
+    networks:
+      - access-control-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Alert Service
+  alert-service:
+    build:
+      context: ./alert-service
+      dockerfile: Dockerfile
+    container_name: access-control-alert-service
+    ports:
+      - "8084:8084"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: adminpassword
+    networks:
+      - access-control-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Saga Service
+  saga-service:
+    build:
+      context: ./saga-service
+      dockerfile: Dockerfile
+    container_name: access-control-saga-service
+    ports:
+      - "8086:8086"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: adminpassword
+    networks:
+      - access-control-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: access-control-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      LOGIN_SERVICE_URL: http://login-service:8081
+      AUTH_SERVICE_URL: http://auth-service:8085
+      EMPLOYEE_SERVICE_URL: http://employee-service:8082
+      ACCESS_CONTROL_SERVICE_URL: http://access-control-service:8083
+      ALERT_SERVICE_URL: http://alert-service:8084
+      SAGA_SERVICE_URL: http://saga-service:8086
+    networks:
+      - access-control-network
+    depends_on:
+      login-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      employee-service:
+        condition: service_healthy
+      access-control-service:
+        condition: service_healthy
+      alert-service:
+        condition: service_healthy
+      saga-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
 volumes:
   mysql_data:
   mongo_data:

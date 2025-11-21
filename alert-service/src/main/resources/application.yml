@@ -5,9 +5,9 @@ spring:
   application:
     name: alert-service
   datasource:
-    url: jdbc:mysql://localhost:3307/access_control_db
-    username: appuser
-    password: apppassword
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3307}/access_control_db
+    username: ${MYSQL_USER:appuser}
+    password: ${MYSQL_PASSWORD:apppassword}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -18,10 +18,10 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
   rabbitmq:
-    host: localhost
-    port: 5673
-    username: admin
-    password: adminpassword
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5673}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:adminpassword}
 
 management:
   endpoints:

@@ -11,42 +11,42 @@ spring:
         response-timeout: 60s
       routes:
         - id: login-service
-          uri: http://localhost:8081
+          uri: ${LOGIN_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/login/**
           filters:
             - StripPrefix=0
         
         - id: auth-service
-          uri: http://localhost:8085
+          uri: ${AUTH_SERVICE_URL:http://localhost:8085}
           predicates:
             - Path=/auth/**
           filters:
             - RewritePath=/auth/(?<segment>.*), /api/auth/$\{segment}
         
         - id: employee-service
-          uri: http://localhost:8082
+          uri: ${EMPLOYEE_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/employee/**
           filters:
             - StripPrefix=0
         
         - id: access-control-service
-          uri: http://localhost:8083
+          uri: ${ACCESS_CONTROL_SERVICE_URL:http://localhost:8083}
           predicates:
             - Path=/access/**
           filters:
             - StripPrefix=0
         
         - id: alert-service
-          uri: http://localhost:8084
+          uri: ${ALERT_SERVICE_URL:http://localhost:8084}
           predicates:
             - Path=/alert/**
           filters:
             - StripPrefix=1
         
         - id: saga-service
-          uri: http://localhost:8086
+          uri: ${SAGA_SERVICE_URL:http://localhost:8086}
           predicates:
             - Path=/saga/**
           filters:
