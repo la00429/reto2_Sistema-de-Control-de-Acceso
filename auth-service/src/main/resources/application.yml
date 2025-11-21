@@ -1,0 +1,42 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: auth-service
+  data:
+    mongodb:
+      host: localhost
+      port: 27018
+      database: login_db
+      username: admin
+      password: adminpassword
+      authentication-database: admin
+
+jwt:
+  secret: mySecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong
+  expiration: 3600000
+  refresh-expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+logging:
+  level:
+    com.accesscontrol: DEBUG
+    org.springframework: INFO
+

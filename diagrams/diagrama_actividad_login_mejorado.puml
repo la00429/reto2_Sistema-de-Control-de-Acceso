@@ -1,0 +1,134 @@
+@startuml
+!theme plain
+skinparam activity {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 12
+}
+skinparam arrow {
+    Color darkblue
+    FontSize 11
+}
+
+title Diagrama de Actividad - Proceso de Inicio de Sesión
+
+|#LightYellow|Administrador|
+start
+:Ingresar credenciales\n(usuario y contraseña);
+note right
+    Datos de entrada:
+    - Username
+    - Password
+end note
+
+|#LightCyan|Sistema|
+:Recibir credenciales;
+:Validar formato de entrada;
+
+if (Formato válido?) then (Sí)
+    :Consultar usuario en base de datos;
+    note right
+        Query: SELECT * FROM users
+        WHERE username = ?
+    end note
+else (No)
+    |#LightYellow|Administrador|
+    :Mostrar error de formato inválido;
+    stop
+endif
+
+if (Usuario existe?) then (Sí)
+    :Obtener hash de contraseña almacenado;
+    :Verificar contraseña\n(comparar hash);
+    
+    if (Contraseña válida?) then (Sí)
+        :Verificar estado del usuario;
+        
+        if (Usuario bloqueado?) then (Sí)
+            :Obtener tiempo restante de bloqueo;
+            |#LightYellow|Administrador|
+            :Mostrar mensaje de usuario bloqueado;
+            note right
+                "Su cuenta está bloqueada.
+                Intente nuevamente en X minutos"
+            end note
+            stop
+        else (No)
+            :Resetear contador de intentos fallidos;
+            :Generar token de sesión JWT;
+            note right
+                Token incluye:
+                - User ID
+                - Roles
+                - Expiración
+            end note
+            :Almacenar sesión en NoSQL DB;
+            :Registrar evento de login exitoso;
+            |#LightYellow|Administrador|
+            :Redirigir a dashboard principal;
+            :Acceso concedido;
+            stop
+        endif
+    else (No)
+        :Incrementar contador de intentos fallidos;
+        :Obtener número de intentos actual;
+        
+        if (Intentos > 3?) then (Sí)
+            :Calcular tiempo de bloqueo\n(10 minutos);
+            :Bloquear usuario temporalmente;
+            :Registrar timestamp de bloqueo;
+            :Generar alerta LOGIN_USR_ATTEMPS_EXCEEDED;
+            note right
+                Alerta enviada a:
+                - Alert Service
+                - Event Bus
+                - Logs del sistema
+            end note
+            :Notificar al administrador del sistema;
+            |#LightYellow|Administrador|
+            :Mostrar mensaje de cuenta bloqueada;
+            note right
+                "Demasiados intentos fallidos.
+                Su cuenta ha sido bloqueada
+                por 10 minutos"
+            end note
+            stop
+        else (No)
+            :Calcular intentos restantes;
+            |#LightYellow|Administrador|
+            :Mostrar mensaje de error;
+            note right
+                "Credenciales incorrectas.
+                Intentos restantes: X"
+            end note
+            stop
+        endif
+    endif
+else (No)
+    :Registrar intento de login con usuario inexistente;
+    :Generar alerta LOGIN_USR_NOT_REGISTERED;
+    note right
+        Alerta de seguridad:
+        - Usuario no registrado
+        - Posible intento de acceso no autorizado
+        - IP y timestamp registrados
+    end note
+    :Notificar al administrador del sistema;
+    |#LightYellow|Administrador|
+    :Mostrar error de usuario no registrado;
+    note right
+        "Usuario no encontrado.
+        Verifique sus credenciales"
+    end note
+    stop
+endif
+
+@enduml
+
+
+
+
+
+
+
+

@@ -1,0 +1,200 @@
+@startuml
+!theme cerulean-outline
+skinparam monochrome false
+skinparam shadowing true
+skinparam defaultFontSize 10
+
+skinparam node {
+    BackgroundColor #E8F4F8
+    BorderColor #2E75B6
+    BorderThickness 2
+    FontSize 11
+    FontStyle bold
+}
+
+skinparam component {
+    BackgroundColor #FFF8DC
+    BorderColor #2E75B6
+    BorderThickness 1
+    FontSize 9
+}
+
+skinparam interface {
+    BackgroundColor #90EE90
+    BorderColor #006400
+    BorderThickness 2
+    FontSize 8
+    FontStyle italic
+}
+
+skinparam note {
+    BackgroundColor #FFE4B5
+    BorderColor #FF8C00
+    FontSize 9
+}
+
+skinparam arrow {
+    Color #2E75B6
+    Thickness 2
+}
+
+title Sistema de Control de Acceso Peatonal\n\nDiagrama de Despliegue\n\n<size:12>Infraestructura y Distribución de Componentes</size>
+
+' ==========================================
+' CAPA 1: CLIENTE
+' ==========================================
+node "1. Cliente Web" <<device>> {
+    artifact "Frontend Web\n\nTecnología: React\nPuerto: 80/443" <<web application>> as Frontend
+}
+
+' ==========================================
+' CAPA 2: SERVIDOR DE APLICACIONES
+' ==========================================
+node "2. Servidor de Aplicaciones\n(Kubernetes Cluster)" <<server>> {
+    
+    ' Subcapa 2.1: API Gateway
+    node "2.1 API Gateway Layer\n(Docker Container)" <<executionEnvironment>> {
+        artifact "Spring Cloud Gateway\n\nPuerto: 8080/443\n\nFuncionalidades:\n- Enrutamiento dinámico\n- Rate limiting\n- Validación JWT\n- Load balancing\n- Circuit breaker" <<gateway>> as Gateway
+    }
+    
+    ' Subcapa 2.2: Microservicios
+    node "2.2 Microservicios\n(Docker Containers + Kubernetes Pods)" <<executionEnvironment>> {
+        
+        ' Grupo de Autenticación
+        rectangle "Grupo: Autenticación" #E6F3FF {
+            artifact "Login Service\n\nPuerto: 8081\n\nFuncionalidades:\n- Registro de usuarios\n- Validación credenciales\n- Bloqueo temporal" <<microservice>> as LoginService
+            
+            artifact "Authentication Service\n\nPuerto: 8085\n\nFuncionalidades:\n- Generación JWT\n- Validación tokens\n- Refresh tokens" <<microservice>> as AuthService
+        }
+        
+        ' Grupo de Negocio
+        rectangle "Grupo: Gestión de Negocio" #E6F3FF {
+            artifact "Employee Service\n\nPuerto: 8082\n\nFuncionalidades:\n- CRUD empleados" <<microservice>> as EmployeeService
+            
+            artifact "Access Control Service\n\nPuerto: 8083\n\nFuncionalidades:\n- Gestión accesos\n- Reportes fecha\n- Reportes empleado" <<microservice>> as AccessControlService
+        }
+    }
+}
+
+' ==========================================
+' CAPA 3: CAPA INTERMEDIA - ORM
+' ==========================================
+node "3. Capa Intermedia - Acceso a Datos\n(Kubernetes Deployment)" <<server>> {
+    node "ORM Layer\n(Docker Container)" <<executionEnvironment>> {
+        artifact "Hibernate ORM\n\nCapa intermedia de acceso a datos\nOrquestador de consultas\ny escritura de datos\nMapeo objeto-relacional" <<data access>> as ORMLayer
+    }
+}
+
+' ==========================================
+' CAPA 4: SERVIDOR DE MENSAJERÍA
+' ==========================================
+node "4. Servidor de Mensajería\n(Kubernetes Service)" <<server>> {
+    node "Message Broker\n(Docker Container)" <<executionEnvironment>> {
+        artifact "RabbitMQ\n\nPuerto: 5672\nManagement UI: 15672\n\nMessage Broker\nComunicación asíncrona" <<messaging>> as EventBus
+    }
+}
+
+' ==========================================
+' CAPA 5: SERVIDOR DE BASE DE DATOS
+' ==========================================
+node "5. Servidor de Base de Datos\n(Kubernetes StatefulSet)" <<server>> {
+    
+    node "5.1 Base de Datos Relacional\n(MySQL)" <<executionEnvironment>> {
+        artifact "Access Control DB\n\nMySQL\nPuerto: 3306\n\nDatos: Accesos" <<database>> as AccessDB
+        
+        artifact "Employee DB\n\nMySQL\nPuerto: 3306\n\nDatos: Empleados" <<database>> as EmployeeDB
+    }
+    
+    node "5.2 Base de Datos NoSQL\n(MongoDB)" <<executionEnvironment>> {
+        artifact "Login DB\n\nMongoDB\nPuerto: 27017\n\nDatos:\n- Autenticación\n- Cache\n- Sesiones" <<database>> as LoginDB
+    }
+}
+
+' ==========================================
+' CAPA 6: SERVIDOR DE MONITOREO
+' ==========================================
+node "6. Servidor de Monitoreo\n(Kubernetes Deployment)" <<server>> {
+    node "Monitoring Stack\n(Docker Containers)" <<executionEnvironment>> {
+        artifact "Prometheus\n\nPuerto: 9090\n\nRecolección de métricas" <<monitoring>> as Prometheus
+        
+        artifact "Grafana\n\nPuerto: 3000\n\nVisualización de métricas" <<monitoring>> as Grafana
+    }
+}
+
+' ==========================================
+' INTERFACES (COLOMBINAS)
+' ==========================================
+
+interface "HTTPS" as HTTPS_IF
+interface "Gateway API" as GatewayAPI_IF
+interface "Login API" as LoginAPI_IF
+interface "Auth API" as AuthAPI_IF
+interface "Employee API" as EmployeeAPI_IF
+interface "Access Control API" as AccessControlAPI_IF
+interface "JWT Token" as JWT_IF
+interface "Repository" as Repo_IF
+interface "ORM Interface" as ORM_IF
+interface "JDBC" as JDBC_IF
+interface "MongoDB Driver" as MongoDB_IF
+interface "AMQP" as AMQP_IF
+interface "Metrics" as Metrics_IF
+interface "Visualization" as Viz_IF
+
+' ==========================================
+' CONEXIONES ENTRE CAPAS
+' ==========================================
+
+' Cliente -> Gateway
+Frontend --() HTTPS_IF
+HTTPS_IF --> GatewayAPI_IF
+Gateway --() GatewayAPI_IF
+
+' Gateway -> Microservicios
+GatewayAPI_IF --> LoginAPI_IF
+GatewayAPI_IF --> AuthAPI_IF
+GatewayAPI_IF --> EmployeeAPI_IF
+GatewayAPI_IF --> AccessControlAPI_IF
+
+LoginService --() LoginAPI_IF
+AuthService --() AuthAPI_IF
+EmployeeService --() EmployeeAPI_IF
+AccessControlService --() AccessControlAPI_IF
+
+' Microservicios -> Microservicios
+LoginService --> AuthService : "solicita token JWT"
+AccessControlService --() JWT_IF
+AuthService --() JWT_IF
+
+' Microservicios -> ORM (Capa Intermedia)
+LoginService --() Repo_IF
+AuthService --() Repo_IF
+EmployeeService --() Repo_IF
+AccessControlService --() Repo_IF
+
+Repo_IF --> ORM_IF
+ORMLayer --() ORM_IF
+
+' ORM -> Bases de Datos
+ORM_IF --> JDBC_IF
+ORM_IF --> MongoDB_IF
+AccessDB --() JDBC_IF
+EmployeeDB --() JDBC_IF
+LoginDB --() MongoDB_IF
+
+' Event Bus
+AccessControlService --> EventBus
+EmployeeService --> EventBus
+EventBus --() AMQP_IF
+
+' Monitoreo
+LoginService ..> Prometheus
+AuthService ..> Prometheus
+EmployeeService ..> Prometheus
+AccessControlService ..> Prometheus
+
+Prometheus --() Metrics_IF
+Prometheus --> Grafana
+Grafana --() Viz_IF
+Metrics_IF --> Viz_IF
+
+@enduml

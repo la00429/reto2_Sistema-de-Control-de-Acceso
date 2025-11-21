@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+skinparam usecase {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 11
+}
+skinparam actor {
+    BackgroundColor lightyellow
+    BorderColor darkblue
+    FontSize 11
+}
+
+title Casos de Uso - Gestión de Empleados
+
+left to right direction
+
+actor "Administrador" as Admin
+
+package "Gestión de Empleados" {
+    usecase "Registrar empleado" as UC3_1
+    usecase "Editar empleado" as UC3_2
+    usecase "Inactivar empleado" as UC3_3
+    usecase "Consultar empleados" as UC3_4
+    usecase "Gestionar empleado" as UC3 <<include>>
+}
+
+Admin --> UC3
+
+UC3 ..> UC3_1 : <<include>>
+UC3 ..> UC3_2 : <<include>>
+UC3 ..> UC3_3 : <<include>>
+UC3 ..> UC3_4 : <<include>>
+
+@enduml
+
+
+
+
+
+
+
+

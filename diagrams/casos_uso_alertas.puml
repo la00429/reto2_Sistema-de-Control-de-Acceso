@@ -1,0 +1,42 @@
+@startuml
+!theme plain
+skinparam usecase {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 11
+}
+skinparam actor {
+    BackgroundColor lightyellow
+    BorderColor darkblue
+    FontSize 11
+}
+
+title Casos de Uso - Gestión de Alertas
+
+left to right direction
+
+actor "Administrador" as Admin
+actor "Sistema de Alertas" as SistemaAlertas <<system>>
+
+package "Gestión de Alertas" {
+    usecase "Registrar alerta" as UC6
+    usecase "Consultar alertas" as UC6_1
+    usecase "Notificar alerta" as UC6_2 <<include>>
+}
+
+Admin --> UC6_1
+
+UC6 ..> UC6_2 : <<include>>
+
+UC6 --> SistemaAlertas
+UC6_2 --> SistemaAlertas
+
+@enduml
+
+
+
+
+
+
+
+

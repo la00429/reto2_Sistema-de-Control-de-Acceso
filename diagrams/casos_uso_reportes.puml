@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+skinparam usecase {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 11
+}
+skinparam actor {
+    BackgroundColor lightyellow
+    BorderColor darkblue
+    FontSize 11
+}
+
+title Casos de Uso - Reportes y Consultas
+
+left to right direction
+
+actor "Administrador" as Admin
+
+package "Reportes y Consultas" {
+    usecase "Generar reporte de accesos" as UC5_1
+    usecase "Generar reporte de empleados" as UC5_2
+    usecase "Generar reporte de alertas" as UC5_3
+    usecase "Exportar reportes" as UC5_4
+    usecase "Generar reportes" as UC5
+}
+
+Admin --> UC5
+
+UC5 ..> UC5_1 : <<include>>
+UC5 ..> UC5_2 : <<include>>
+UC5 ..> UC5_3 : <<include>>
+UC5 ..> UC5_4 : <<include>>
+
+@enduml
+
+
+
+
+
+
+
+

@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: login-service
+  data:
+    mongodb:
+      host: localhost
+      port: 27018
+      database: login_db
+      username: admin
+      password: adminpassword
+      authentication-database: admin
+  rabbitmq:
+    host: localhost
+    port: 5673
+    username: admin
+    password: adminpassword
+
+server:
+  port: 8081
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.accesscontrol: DEBUG
+    org.springframework: INFO
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+
+auth:
+  service:
+    url: http://localhost:8085

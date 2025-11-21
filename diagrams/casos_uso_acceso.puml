@@ -1,0 +1,52 @@
+@startuml
+!theme plain
+skinparam usecase {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 11
+}
+skinparam actor {
+    BackgroundColor lightyellow
+    BorderColor darkblue
+    FontSize 11
+}
+
+title Casos de Uso - Control de Acceso
+
+left to right direction
+
+actor "Empleado" as Empleado
+actor "Sistema de Alertas" as SistemaAlertas <<system>>
+
+package "Control de Acceso" {
+    usecase "Registrar ingreso" as UC4_1
+    usecase "Registrar salida" as UC4_2
+    usecase "Consultar historial de acceso" as UC4_3
+    usecase "Validar acceso" as UC4_4 <<include>>
+    usecase "Registrar alerta" as UC6
+    usecase "Notificar alerta" as UC6_2 <<include>>
+}
+
+Empleado --> UC4_1
+Empleado --> UC4_2
+Empleado --> UC4_3
+
+UC4_1 ..> UC4_4 : <<include>>
+UC4_2 ..> UC4_4 : <<include>>
+
+UC4_1 <.. UC6 : <<extend>>
+UC4_2 <.. UC6 : <<extend>>
+
+UC6 ..> UC6_2 : <<include>>
+UC6 --> SistemaAlertas
+UC6_2 --> SistemaAlertas
+
+@enduml
+
+
+
+
+
+
+
+

@@ -1,0 +1,300 @@
+@startuml
+!theme cerulean-outline
+skinparam monochrome false
+skinparam shadowing true
+skinparam componentStyle uml2
+skinparam linetype ortho
+skinparam defaultFontSize 10
+
+' Configuración de componentes
+skinparam component {
+    BackgroundColor #E8F4F8
+    BorderColor #2E75B6
+    BorderThickness 2
+    FontSize 11
+    FontStyle bold
+}
+
+' Configuración de paquetes (capas)
+skinparam package {
+    BackgroundColor #F0F8FF
+    BorderColor #4682B4
+    BorderThickness 3
+    FontSize 13
+    FontStyle bold
+}
+
+' Configuración de interfaces (colombinas)
+skinparam interface {
+    BackgroundColor #90EE90
+    BorderColor #006400
+    BorderThickness 2
+    FontSize 9
+    FontStyle italic
+}
+
+' Configuración de notas
+skinparam note {
+    BackgroundColor #FFE4B5
+    BorderColor #FF8C00
+    FontSize 9
+}
+
+' Configuración de flechas
+skinparam arrow {
+    Color #2E75B6
+    Thickness 2
+}
+
+title Sistema de Control de Acceso Peatonal\n\nDiagrama de Componentes\n\n<size:12>Arquitectura de Microservicios</size>
+
+' ==========================================
+' CAPA DE PRESENTACIÓN
+' ==========================================
+package "1. Capa de Presentación" <<layer>> {
+    component [Web Admin] <<web application>> as WebAdmin
+    note right of WebAdmin
+        <b>Frontend Web</b>
+        Tecnología: React
+        Interfaz administración
+        Puerto: 80/443
+    end note
+}
+
+' ==========================================
+' CAPA DE API GATEWAY
+' ==========================================
+package "2. Capa de API Gateway" <<layer>> {
+    component [Spring Cloud Gateway] <<gateway>> as APIGateway
+    note right of APIGateway
+        <b>Funcionalidades</b>
+        - Enrutamiento dinámico
+        - Rate limiting
+        - Validación JWT
+        - Load balancing
+        - Circuit breaker
+    end note
+}
+
+' ==========================================
+' CAPA DE APLICACIÓN - MICROSERVICIOS
+' ==========================================
+package "3. Capa de Aplicación - Microservicios" <<layer>> {
+    
+    ' Grupo de Autenticación y Autorización
+    rectangle "Grupo: Autenticación" #E6F3FF {
+        component [Login Service] <<microservice>> as LoginService
+        component [Authentication Service] <<microservice>> as AuthService
+        
+        note bottom of LoginService
+            <b>Funcionalidades</b>
+            - Registro de usuarios
+            - Validación credenciales
+            - Bloqueo temporal
+            - Puerto: 8081
+        end note
+        
+        note bottom of AuthService
+            <b>Funcionalidades</b>
+            - Generación JWT/Access Tokens
+            - Validación de tokens
+            - Refresh tokens
+            - Puerto: 8085
+        end note
+    }
+    
+    ' Grupo de Gestión de Negocio
+    rectangle "Grupo: Gestión de Negocio" #E6F3FF {
+        component [Employee Service] <<microservice>> as EmployeeService
+        component [Access Control Service] <<microservice>> as AccessControlService
+        
+        note bottom of EmployeeService
+            <b>Funcionalidades</b>
+            - CRUD empleados
+            - Gestión información
+            - Puerto: 8082
+        end note
+        
+        note bottom of AccessControlService
+            <b>Funcionalidades</b>
+            - Gestión ingresos/salidas
+            - Control acceso peatonal
+            - Reportes fecha/empleado
+            - Puerto: 8083
+        end note
+    }
+}
+
+' ==========================================
+' CAPA INTERMEDIA - ACCESO A DATOS
+' ==========================================
+package "4. Capa Intermedia - Acceso a Datos" <<layer>> {
+    component [Hibernate ORM] <<data access>> as ORMLayer
+    note right of ORMLayer
+        <b>Hibernate ORM</b>
+        Capa intermedia de acceso a datos
+        Orquestador de consultas
+        y escritura de datos
+        Mapeo objeto-relacional
+    end note
+}
+
+' ==========================================
+' CAPA DE INFRAESTRUCTURA
+' ==========================================
+package "5. Capa de Infraestructura" <<layer>> {
+    
+    ' Grupo de Persistencia
+    rectangle "Persistencia de Datos" #FFF8DC {
+        component [MySQL Database] <<database>> as RelationalDB
+        component [MongoDB Database] <<database>> as NoSQLDB
+        
+        note left of RelationalDB
+            <b>MySQL</b>
+            Puerto: 3306
+            Datos transaccionales:
+            - Empleados
+            - Accesos
+        end note
+        
+        note left of NoSQLDB
+            <b>MongoDB</b>
+            Puerto: 27017
+            - Cache
+            - Sesiones
+            - Datos autenticación
+        end note
+    }
+    
+    ' Grupo de Mensajería
+    rectangle "Comunicación Asíncrona" #F0FFF0 {
+        component [RabbitMQ] <<messaging>> as EventBus
+        note right of EventBus
+            <b>RabbitMQ</b>
+            Message Broker
+            Comunicación asíncrona
+            entre microservicios
+            Puerto: 5672
+        end note
+    }
+    
+    ' Grupo de Monitoreo
+    rectangle "Monitoreo y Observabilidad" #FFF0F5 {
+        component [Prometheus] <<monitoring>> as Prometheus
+        component [Grafana] <<monitoring>> as Grafana
+        
+        note left of Prometheus
+            <b>Prometheus</b>
+            Recolección métricas
+            Puerto: 9090
+        end note
+        
+        note left of Grafana
+            <b>Grafana</b>
+            Visualización métricas
+            Puerto: 3000
+        end note
+    }
+}
+
+' ==========================================
+' INTERFACES (COLOMBINAS)
+' ==========================================
+
+interface "HTTPS" as HTTPS_IF
+interface "Gateway API" as GatewayAPI_IF
+interface "Login API" as LoginAPI_IF
+interface "Auth API" as AuthAPI_IF
+interface "Employee API" as EmployeeAPI_IF
+interface "Access Control API" as AccessControlAPI_IF
+interface "JWT Token" as JWT_IF
+interface "Repository" as Repo_IF
+interface "ORM Interface" as ORM_IF
+interface "JDBC" as JDBC_IF
+interface "MongoDB Driver" as MongoDB_IF
+interface "AMQP" as AMQP_IF
+interface "Metrics" as Metrics_IF
+interface "Visualization" as Viz_IF
+
+' ==========================================
+' RELACIONES ENTRE CAPAS
+' ==========================================
+
+' Flujo principal: Presentación -> Gateway -> Microservicios
+WebAdmin --() HTTPS_IF
+HTTPS_IF --> GatewayAPI_IF
+APIGateway --() GatewayAPI_IF
+
+' Gateway enruta a cada microservicio
+GatewayAPI_IF --> LoginAPI_IF
+GatewayAPI_IF --> AuthAPI_IF
+GatewayAPI_IF --> EmployeeAPI_IF
+GatewayAPI_IF --> AccessControlAPI_IF
+
+LoginService --() LoginAPI_IF
+AuthService --() AuthAPI_IF
+EmployeeService --() EmployeeAPI_IF
+AccessControlService --() AccessControlAPI_IF
+
+' ==========================================
+' RELACIONES ENTRE MICROSERVICIOS
+' ==========================================
+LoginService --> AuthService : "solicita token JWT"
+AuthService --> LoginService : "valida usuario"
+AccessControlService --() JWT_IF
+AuthService --() JWT_IF
+
+' Publicación de eventos
+AccessControlService --> EventBus
+EmployeeService --> EventBus
+EventBus --() AMQP_IF
+
+' ==========================================
+' RELACIONES CON CAPA INTERMEDIA (ORM)
+' ==========================================
+LoginService --() Repo_IF
+AuthService --() Repo_IF
+EmployeeService --() Repo_IF
+AccessControlService --() Repo_IF
+
+Repo_IF --> ORM_IF
+ORMLayer --() ORM_IF
+
+' ORM -> Bases de Datos
+ORM_IF --> JDBC_IF
+ORM_IF --> MongoDB_IF
+RelationalDB --() JDBC_IF
+NoSQLDB --() MongoDB_IF
+
+' ==========================================
+' RELACIONES DE MONITOREO
+' ==========================================
+LoginService ..> Prometheus
+AuthService ..> Prometheus
+EmployeeService ..> Prometheus
+AccessControlService ..> Prometheus
+
+Prometheus --() Metrics_IF
+Prometheus --> Grafana
+Grafana --() Viz_IF
+Metrics_IF --> Viz_IF
+
+' ==========================================
+' LEYENDA
+' ==========================================
+legend right
+    |= <b>Estereotipo</b> |= <b>Descripción</b> |
+    | <<web application>> | Aplicación web cliente |
+    | <<gateway>> | API Gateway |
+    | <<microservice>> | Microservicio |
+    | <<database>> | Base de datos |
+    | <<data access>> | Capa intermedia acceso a datos |
+    | <<messaging>> | Sistema de mensajería |
+    | <<monitoring>> | Herramienta de monitoreo |
+    | <b>()</b> | Interfaz (Colombina) |
+    | <b>--()</b> | Implementa/Usa interfaz (Media luna) |
+    | <b>--></b> | Dependencia directa |
+    | <b>..></b> | Dependencia indirecta |
+end legend
+
+@enduml

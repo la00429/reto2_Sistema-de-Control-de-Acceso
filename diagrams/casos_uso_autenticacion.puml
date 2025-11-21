@@ -1,0 +1,52 @@
+@startuml
+!theme plain
+skinparam usecase {
+    BackgroundColor lightblue
+    BorderColor darkblue
+    FontSize 11
+}
+skinparam actor {
+    BackgroundColor lightyellow
+    BorderColor darkblue
+    FontSize 11
+}
+
+title Casos de Uso - Autenticación y Autorización
+
+left to right direction
+
+actor "Administrador" as Admin
+actor "Empleado" as Empleado
+actor "Sistema de Alertas" as SistemaAlertas <<system>>
+
+package "Autenticación y Autorización" {
+    usecase "Iniciar sesión" as UC1
+    usecase "Cerrar sesión" as UC1_1
+    usecase "Recuperar contraseña" as UC1_2
+    usecase "Registrar usuario" as UC2
+    usecase "Gestionar permisos de usuario" as UC2_1
+    usecase "Registrar alerta" as UC6
+}
+
+Admin --> UC1
+Admin --> UC1_1
+Admin --> UC1_2
+Admin --> UC2
+Admin --> UC2_1
+
+Empleado --> UC1
+Empleado --> UC1_1
+
+UC1 <.. UC6 : <<extend>>
+
+UC6 --> SistemaAlertas
+
+@enduml
+
+
+
+
+
+
+
+
