@@ -1,4 +1,4 @@
-package com.accesscontrol.accesscontrol.controller;
+package com.accesscontrol.accesscontrol.infrastructure.adapter.in.web;
 
 import com.accesscontrol.accesscontrol.exception.AccessValidationException;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manejador global de excepciones
+ * Arquitectura Hexagonal: Infrastructure Layer - Adaptador de entrada
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     
@@ -69,6 +73,5 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(response);
     }
 }
-
 
 

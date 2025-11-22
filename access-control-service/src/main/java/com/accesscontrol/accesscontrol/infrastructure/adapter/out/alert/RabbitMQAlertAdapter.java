@@ -39,3 +39,4 @@ public class RabbitMQAlertAdapter implements AlertServicePort {
 
 
 
+

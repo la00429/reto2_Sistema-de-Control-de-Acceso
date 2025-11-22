@@ -48,12 +48,40 @@ function Layout() {
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography 
+            variant="h6" 
+            noWrap 
+            component="div" 
+            sx={{ 
+              flexGrow: 1,
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+            }}
+          >
             Sistema de Control de Acceso Peatonal
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
-            {user?.username}
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 2,
+              py: 0.5,
+              borderRadius: 2,
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontWeight: 500,
+                color: 'white',
+              }}
+            >
+              {user?.username}
+            </Typography>
+          </Box>
         </Toolbar>
       </AppBar>
       <Drawer
@@ -63,7 +91,9 @@ function Layout() {
           flexShrink: 0,
           '& .MuiDrawer-paper': {
             width: drawerWidth,
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+            background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
           }
         }}
       >
@@ -75,17 +105,64 @@ function Layout() {
                 <ListItemButton
                   selected={location.pathname === item.path}
                   onClick={() => navigate(item.path)}
+                  sx={{
+                    mx: 1,
+                    mb: 0.5,
+                    borderRadius: 2,
+                    transition: 'all 0.2s ease-in-out',
+                    '&.Mui-selected': {
+                      background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                      color: 'white',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+                      },
+                      '& .MuiListItemIcon-root': {
+                        color: 'white',
+                      },
+                    },
+                    '&:hover': {
+                      background: 'rgba(25, 118, 210, 0.08)',
+                      transform: 'translateX(4px)',
+                    },
+                  }}
                 >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
+                  <ListItemIcon
+                    sx={{
+                      color: location.pathname === item.path ? 'white' : 'inherit',
+                      minWidth: 40,
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      fontWeight: location.pathname === item.path ? 600 : 500,
+                    }}
+                  />
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
-          <Divider />
+          <Divider sx={{ my: 1 }} />
           <List>
             <ListItem disablePadding>
-              <ListItemButton onClick={handleLogout}>
+              <ListItemButton 
+                onClick={handleLogout}
+                sx={{
+                  mx: 1,
+                  borderRadius: 2,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    color: '#ef4444',
+                    transform: 'translateX(4px)',
+                    '& .MuiListItemIcon-root': {
+                      color: '#ef4444',
+                    },
+                  },
+                }}
+              >
                 <ListItemIcon>
                   <LogoutIcon />
                 </ListItemIcon>
@@ -112,6 +189,7 @@ function Layout() {
 }
 
 export default Layout
+
 
 
 

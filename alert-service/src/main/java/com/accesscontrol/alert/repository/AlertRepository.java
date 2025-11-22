@@ -24,3 +24,4 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
 
 
+

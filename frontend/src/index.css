@@ -10,13 +10,83 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Mejoras visuales para tooltips y ayuda */
+.MuiTooltip-tooltip {
+  font-size: 0.875rem !important;
+  max-width: 300px !important;
+  padding: 12px 16px !important;
+  line-height: 1.6 !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Animaciones suaves para transiciones */
+.MuiPaper-root {
+  transition: box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Mejora en la accesibilidad de los iconos de ayuda */
+.MuiIconButton-root:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Mejoras de accesibilidad */
+*:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mejoras responsive */
+@media (max-width: 600px) {
+  .MuiContainer-root {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .MuiPaper-root {
+    padding: 16px !important;
+  }
+}
+
+/* Animaciones suaves para mejor UX */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.MuiPaper-root {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Mejoras de legibilidad */
+.MuiTypography-body2 {
+  line-height: 1.6;
+}
+
+.MuiTypography-body1 {
+  line-height: 1.6;
+}
+
 
 
 

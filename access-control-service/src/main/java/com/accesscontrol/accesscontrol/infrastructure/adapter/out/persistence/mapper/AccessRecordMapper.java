@@ -14,6 +14,7 @@ public class AccessRecordMapper {
         com.accesscontrol.accesscontrol.model.AccessRecord jpa = new com.accesscontrol.accesscontrol.model.AccessRecord();
         jpa.setId(domain.getId());
         jpa.setEmployeeID(domain.getEmployeeID());
+        jpa.setEmployeeCode(domain.getEmployeeCode()); // Incluir código del empleado
         jpa.setAccessdatetime(domain.getAccessdatetime());
         jpa.setAccessType(convertAccessType(domain.getAccessType()));
         jpa.setAccessTimestamp(domain.getAccessTimestamp());
@@ -28,6 +29,7 @@ public class AccessRecordMapper {
         AccessRecord domain = new AccessRecord();
         domain.setId(jpa.getId());
         domain.setEmployeeID(jpa.getEmployeeID());
+        domain.setEmployeeCode(jpa.getEmployeeCode()); // Incluir código del empleado
         domain.setAccessdatetime(jpa.getAccessdatetime());
         domain.setAccessType(convertAccessTypeFromJpa(jpa.getAccessType()));
         domain.setAccessTimestamp(jpa.getAccessTimestamp());

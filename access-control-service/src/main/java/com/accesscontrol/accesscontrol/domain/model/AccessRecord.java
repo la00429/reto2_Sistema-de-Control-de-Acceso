@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class AccessRecord {
     private Long id;
     private String employeeID;
+    private String employeeCode;  // Código del empleado
     private String accessdatetime;
     private AccessType accessType;
     private LocalDateTime accessTimestamp;
@@ -45,6 +46,14 @@ public class AccessRecord {
 
     public void setEmployeeID(String employeeID) {
         this.employeeID = employeeID;
+    }
+
+    public String getEmployeeCode() {
+        return employeeCode;
+    }
+
+    public void setEmployeeCode(String employeeCode) {
+        this.employeeCode = employeeCode;
     }
 
     public String getAccessdatetime() {

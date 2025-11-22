@@ -7,7 +7,8 @@ import com.accesscontrol.accesscontrol.dto.EmployeeAccessReportDTO;
 import com.accesscontrol.accesscontrol.dto.EmployeeDetailedReportDTO;
 import com.accesscontrol.accesscontrol.exception.AccessValidationException;
 import com.accesscontrol.accesscontrol.infrastructure.adapter.in.web.mapper.AccessRecordWebMapper;
-import com.accesscontrol.accesscontrol.service.AccessControlService;
+import com.accesscontrol.accesscontrol.application.service.AccessControlService;
+import com.accesscontrol.accesscontrol.domain.port.out.EmployeeServicePort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -35,13 +36,16 @@ public class AccessControlController {
     private final RegisterAccessUseCase registerAccessUseCase;
     private final AccessRecordWebMapper mapper;
     private final AccessControlService accessControlService;
+    private final EmployeeServicePort employeeServicePort;
 
     public AccessControlController(RegisterAccessUseCase registerAccessUseCase, 
                                    AccessRecordWebMapper mapper,
-                                   AccessControlService accessControlService) {
+                                   AccessControlService accessControlService,
+                                   EmployeeServicePort employeeServicePort) {
         this.registerAccessUseCase = registerAccessUseCase;
         this.mapper = mapper;
         this.accessControlService = accessControlService;
+        this.employeeServicePort = employeeServicePort;
     }
 
     @Operation(summary = "Registrar ingreso", description = "Registra el ingreso de un empleado al sistema")
@@ -52,6 +56,23 @@ public class AccessControlController {
     @PostMapping("/usercheckin")
     public ResponseEntity<?> userCheckIn(@Valid @RequestBody AccessRecordDTO accessRecordDTO) {
         try {
+            // Si no viene el employeeCode pero sí el employeeID (documento), obtenerlo del servicio de empleados
+            if ((accessRecordDTO.getEmployeeCode() == null || accessRecordDTO.getEmployeeCode().trim().isEmpty()) 
+                && accessRecordDTO.getEmployeeID() != null && !accessRecordDTO.getEmployeeID().trim().isEmpty()) {
+                try {
+                    Map<String, Object> employeeInfo = employeeServicePort.getEmployeeByDocument(accessRecordDTO.getEmployeeID());
+                    if (employeeInfo != null && employeeInfo.containsKey("employeeCode")) {
+                        String employeeCode = (String) employeeInfo.get("employeeCode");
+                        if (employeeCode != null && !employeeCode.trim().isEmpty()) {
+                            accessRecordDTO.setEmployeeCode(employeeCode);
+                        }
+                    }
+                } catch (Exception e) {
+                    // Si falla, continuar sin employeeCode
+                    System.err.println("No se pudo obtener el código del empleado: " + e.getMessage());
+                }
+            }
+            
             AccessRecord domainRecord = mapper.toDomainEntity(accessRecordDTO);
             domainRecord.setAccessType(AccessRecord.AccessType.ENTRY);
 
@@ -72,6 +93,23 @@ public class AccessControlController {
     @PostMapping("/usercheckout")
     public ResponseEntity<?> userCheckOut(@Valid @RequestBody AccessRecordDTO accessRecordDTO) {
         try {
+            // Si no viene el employeeCode pero sí el employeeID (documento), obtenerlo del servicio de empleados
+            if ((accessRecordDTO.getEmployeeCode() == null || accessRecordDTO.getEmployeeCode().trim().isEmpty()) 
+                && accessRecordDTO.getEmployeeID() != null && !accessRecordDTO.getEmployeeID().trim().isEmpty()) {
+                try {
+                    Map<String, Object> employeeInfo = employeeServicePort.getEmployeeByDocument(accessRecordDTO.getEmployeeID());
+                    if (employeeInfo != null && employeeInfo.containsKey("employeeCode")) {
+                        String employeeCode = (String) employeeInfo.get("employeeCode");
+                        if (employeeCode != null && !employeeCode.trim().isEmpty()) {
+                            accessRecordDTO.setEmployeeCode(employeeCode);
+                        }
+                    }
+                } catch (Exception e) {
+                    // Si falla, continuar sin employeeCode
+                    System.err.println("No se pudo obtener el código del empleado: " + e.getMessage());
+                }
+            }
+            
             AccessRecord domainRecord = mapper.toDomainEntity(accessRecordDTO);
             domainRecord.setAccessType(AccessRecord.AccessType.EXIT);
 

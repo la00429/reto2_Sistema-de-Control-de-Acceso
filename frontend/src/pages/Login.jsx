@@ -7,9 +7,14 @@ import {
   Button,
   Typography,
   Box,
-  Alert
+  Alert,
+  CircularProgress,
+  InputAdornment
 } from '@mui/material'
+import { Person as PersonIcon, Lock as LockIcon } from '@mui/icons-material'
 import { useAuth } from '../context/AuthContext'
+import HelpIcon from '../components/HelpIcon'
+import LoadingButton from '../components/LoadingButton'
 
 function Login() {
   const [username, setUsername] = useState('')
@@ -64,16 +69,56 @@ function Login() {
           justifyContent: 'center'
         }}
       >
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center">
-            Sistema de Control de Acceso
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 3 }}>
-            Iniciar Sesión
-          </Typography>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: { xs: 3, sm: 4 }, 
+            width: '100%',
+            maxWidth: 480,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              gutterBottom 
+              sx={{
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1,
+              }}
+            >
+              Sistema de Control de Acceso
+            </Typography>
+            <Typography 
+              variant="subtitle1" 
+              color="text.secondary" 
+              sx={{ 
+                fontWeight: 500,
+                letterSpacing: '0.02em',
+              }}
+            >
+              Iniciar Sesión
+            </Typography>
+          </Box>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2,
+                '& .MuiAlert-icon': {
+                  alignItems: 'center',
+                },
+              }}
+              onClose={() => setError('')}
+            >
               {error}
             </Alert>
           )}
@@ -81,70 +126,174 @@ function Login() {
           <form onSubmit={handleSubmit}>
             {!requiresMFA ? (
               <>
-                <TextField
-                  fullWidth
-                  label="Usuario"
-                  variant="outlined"
-                  margin="normal"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  autoFocus
-                  disabled={loading}
-                />
-                <TextField
-                  fullWidth
-                  label="Contraseña"
-                  type="password"
-                  variant="outlined"
-                  margin="normal"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-                <Button
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Usuario"
+                    variant="outlined"
+                    margin="normal"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoFocus
+                    disabled={loading}
+                    helperText={username ? "Ingresa tu nombre de usuario del sistema" : ""}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon fontSize="small" color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      },
+                    }}
+                  />
+                  <Box sx={{ mt: 3 }}>
+                    <HelpIcon 
+                      title="Ingresa el nombre de usuario que te fue asignado. Si no tienes uno, contacta al administrador del sistema."
+                      placement="right"
+                    />
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Contraseña"
+                    type="password"
+                    variant="outlined"
+                    margin="normal"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    helperText={password ? "Ingresa tu contraseña de acceso" : ""}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LockIcon fontSize="small" color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      },
+                    }}
+                  />
+                  <Box sx={{ mt: 3 }}>
+                    <HelpIcon 
+                      title="Ingresa tu contraseña de acceso. Si la has olvidado, contacta al administrador para restablecerla."
+                      placement="right"
+                    />
+                  </Box>
+                </Box>
+                <LoadingButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                  disabled={loading}
+                  size="large"
+                  loading={loading}
+                  sx={{ 
+                    mt: 3, 
+                    mb: 2,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                  }}
                 >
-                  {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-                </Button>
+                  Iniciar Sesión
+                </LoadingButton>
               </>
             ) : (
               <>
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  Se ha generado un código MFA. Revisa la consola del servidor (Auth Service) para ver el código.
-                  <br />
-                  <strong>Nota:</strong> En producción, el código se enviaría por email/SMS.
+                <Alert 
+                  severity="info" 
+                  sx={{ 
+                    mb: 3,
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography variant="body2" component="div">
+                    Se ha generado un código MFA. Revisa la consola del servidor (Auth Service) para ver el código.
+                    <br />
+                    <strong>Nota:</strong> En producción, el código se enviaría por email/SMS.
+                  </Typography>
                 </Alert>
-                <TextField
-                  fullWidth
-                  label="Código MFA (6 dígitos)"
-                  variant="outlined"
-                  margin="normal"
-                  value={mfaToken}
-                  onChange={(e) => setMfaToken(e.target.value)}
-                  required
-                  autoFocus
-                  disabled={loading}
-                  inputProps={{ maxLength: 6 }}
-                  helperText="Ingresa el código de 6 dígitos generado"
-                />
-                <Button
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Código MFA (6 dígitos)"
+                    variant="outlined"
+                    margin="normal"
+                    value={mfaToken}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '')
+                      setMfaToken(value)
+                    }}
+                    required
+                    autoFocus
+                    disabled={loading}
+                    inputProps={{ 
+                      maxLength: 6,
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*',
+                    }}
+                    helperText={
+                      mfaToken.length === 6 
+                        ? "✓ Código completo" 
+                        : `Ingresa ${6 - mfaToken.length} dígito${6 - mfaToken.length !== 1 ? 's' : ''} más`
+                    }
+                    error={mfaToken.length > 0 && mfaToken.length < 6}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        fontSize: '1.25rem',
+                        letterSpacing: '0.5em',
+                        textAlign: 'center',
+                        fontWeight: 600,
+                      },
+                    }}
+                  />
+                  <Box sx={{ mt: 3 }}>
+                    <HelpIcon 
+                      title="El código MFA (Autenticación Multifactor) es un código de 6 dígitos que se genera automáticamente para mayor seguridad. En producción, este código se enviaría por email o SMS. Actualmente, puedes verlo en la consola del servidor."
+                      placement="right"
+                    />
+                  </Box>
+                </Box>
+                <LoadingButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                  disabled={loading || mfaToken.length !== 6}
+                  size="large"
+                  loading={loading}
+                  disabled={mfaToken.length !== 6}
+                  sx={{ 
+                    mt: 3, 
+                    mb: 2,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                  }}
                 >
-                  {loading ? 'Verificando...' : 'Verificar Código MFA'}
-                </Button>
+                  Verificar Código MFA
+                </LoadingButton>
                 <Button
                   fullWidth
                   variant="outlined"
+                  size="large"
                   sx={{ mt: 1 }}
                   onClick={() => {
                     setRequiresMFA(false)

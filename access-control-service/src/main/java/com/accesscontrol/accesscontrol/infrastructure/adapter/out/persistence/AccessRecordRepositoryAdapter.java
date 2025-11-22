@@ -86,6 +86,31 @@ public class AccessRecordRepositoryAdapter implements AccessRecordRepositoryPort
                 .map(mapper::toDomainEntity)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<AccessRecord> findAll() {
+        return jpaRepository.findAll().stream()
+                .map(mapper::toDomainEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AccessRecord> findByEmployeeId(Long employeeId) {
+        // Buscar todos y filtrar por employeeId (Long) ya que el repositorio JPA no tiene este método directo
+        return jpaRepository.findAll().stream()
+                .filter(entity -> entity.getEmployeeId() != null && entity.getEmployeeId().equals(employeeId))
+                .map(mapper::toDomainEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AccessRecord> findByEmployeeIdAndDateRange(Long employeeId, LocalDateTime start, LocalDateTime end) {
+        // Filtrar por employeeId (Long) y rango de fechas
+        return jpaRepository.findByAccessTimestampBetween(start, end).stream()
+                .filter(entity -> entity.getEmployeeId() != null && entity.getEmployeeId().equals(employeeId))
+                .map(mapper::toDomainEntity)
+                .collect(Collectors.toList());
+    }
 }
 
 

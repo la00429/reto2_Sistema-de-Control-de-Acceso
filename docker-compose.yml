@@ -259,6 +259,10 @@ services:
     ports:
       - "8086:8086"
     environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: admin
@@ -266,6 +270,8 @@ services:
     networks:
       - access-control-network
     depends_on:
+      mysql:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     healthcheck:

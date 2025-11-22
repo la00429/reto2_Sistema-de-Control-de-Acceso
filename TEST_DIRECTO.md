@@ -41,3 +41,4 @@ const api = axios.create({
 Pero esto solo funciona para el login-service. Para otros servicios, necesitarás pasar por el gateway.
 
 
+

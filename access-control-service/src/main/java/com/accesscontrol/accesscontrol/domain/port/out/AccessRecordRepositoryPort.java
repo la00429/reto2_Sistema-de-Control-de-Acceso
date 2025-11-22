@@ -13,11 +13,14 @@ import java.util.Optional;
 public interface AccessRecordRepositoryPort {
     AccessRecord save(AccessRecord accessRecord);
     Optional<AccessRecord> findById(Long id);
+    List<AccessRecord> findAll();
     List<AccessRecord> findByEmployeeID(String employeeID);
     List<AccessRecord> findByEmployeeCode(String employeeCode);
+    List<AccessRecord> findByEmployeeId(Long employeeId);
     List<AccessRecord> findByAccessTimestampBetween(LocalDateTime start, LocalDateTime end);
     List<AccessRecord> findByEmployeeIDAndDateRange(String employeeID, LocalDateTime start, LocalDateTime end);
     List<AccessRecord> findByEmployeeCodeAndDateRange(String employeeCode, LocalDateTime start, LocalDateTime end);
+    List<AccessRecord> findByEmployeeIdAndDateRange(Long employeeId, LocalDateTime start, LocalDateTime end);
     List<AccessRecord> findLatestByEmployeeID(String employeeID);
     List<AccessRecord> findLatestByEmployeeCode(String employeeCode);
 }

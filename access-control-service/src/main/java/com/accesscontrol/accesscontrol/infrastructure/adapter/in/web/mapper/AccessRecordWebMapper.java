@@ -15,6 +15,7 @@ public class AccessRecordWebMapper {
         AccessRecord domain = new AccessRecord();
         domain.setId(dto.getId());
         domain.setEmployeeID(dto.getEmployeeID());
+        domain.setEmployeeCode(dto.getEmployeeCode()); // Incluir código del empleado
         domain.setAccessdatetime(dto.getAccessdatetime());
         
         if (dto.getAccessType() != null) {
@@ -47,6 +48,7 @@ public class AccessRecordWebMapper {
         AccessRecordDTO dto = new AccessRecordDTO();
         dto.setId(domain.getId());
         dto.setEmployeeID(domain.getEmployeeID());
+        dto.setEmployeeCode(domain.getEmployeeCode()); // Incluir código del empleado
         dto.setAccessdatetime(domain.getAccessdatetime());
         dto.setAccessType(domain.getAccessType() != null ? domain.getAccessType().name() : null);
         dto.setAccessTimestamp(domain.getAccessTimestamp());

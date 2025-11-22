@@ -83,3 +83,4 @@ const api = axios.create({
 3. Si el acceso directo funciona, considera agregar un filtro personalizado en el gateway para manejar mejor las respuestas
 
 
+

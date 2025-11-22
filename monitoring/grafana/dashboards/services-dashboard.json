@@ -1,0 +1,88 @@
+{
+  "dashboard": {
+    "title": "Services Health Dashboard",
+    "tags": ["services", "health"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"api-gateway\"}",
+            "legendFormat": "API Gateway"
+          },
+          {
+            "expr": "up{job=\"login-service\"}",
+            "legendFormat": "Login Service"
+          },
+          {
+            "expr": "up{job=\"employee-service\"}",
+            "legendFormat": "Employee Service"
+          },
+          {
+            "expr": "up{job=\"access-control-service\"}",
+            "legendFormat": "Access Control Service"
+          },
+          {
+            "expr": "up{job=\"alert-service\"}",
+            "legendFormat": "Alert Service"
+          },
+          {
+            "expr": "up{job=\"auth-service\"}",
+            "legendFormat": "Auth Service"
+          },
+          {
+            "expr": "up{job=\"saga-service\"}",
+            "legendFormat": "Saga Service"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_server_requests_seconds_count[5m])",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+      },
+      {
+        "id": 3,
+        "title": "HTTP Request Latency (P95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+      },
+      {
+        "id": 4,
+        "title": "JVM Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+            "legendFormat": "{{service}} - {{id}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 12}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}
+
+

@@ -1,7 +1,6 @@
 package com.accesscontrol.saga.orchestrator;
 
 import com.accesscontrol.saga.model.SagaStep;
-import com.accesscontrol.saga.model.SagaState;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

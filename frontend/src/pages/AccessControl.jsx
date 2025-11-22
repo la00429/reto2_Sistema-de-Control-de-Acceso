@@ -25,8 +25,17 @@ import {
   FormHelperText,
   Autocomplete
 } from '@mui/material'
-import { Add as AddIcon, Info as InfoIcon, CheckCircle as CheckCircleIcon, Warning as WarningIcon } from '@mui/icons-material'
+import { 
+  Add as AddIcon, 
+  Info as InfoIcon, 
+  CheckCircle as CheckCircleIcon, 
+  Warning as WarningIcon, 
+  History as HistoryIcon
+} from '@mui/icons-material'
 import api from '../services/api'
+import HelpIcon from '../components/HelpIcon'
+import EmptyState from '../components/EmptyState'
+import LoadingButton from '../components/LoadingButton'
 
 function AccessControl() {
   const [accessRecords, setAccessRecords] = useState([])
@@ -179,12 +188,19 @@ function AccessControl() {
       }
       
       // Preparar los datos para enviar (definir fuera del try para que esté disponible en catch)
+      // Asegurarse de que employeeCode se envíe correctamente (null si está vacío, para que el backend lo obtenga)
       const accessData = {
         employeeID: formData.employeeID.trim(),
+        employeeCode: formData.employeeCode && formData.employeeCode.trim() !== '' ? formData.employeeCode.trim() : null,
         accessType: formData.accessType,
         location: formData.location.trim(),
         deviceId: formData.deviceId.trim()
       }
+      
+      console.log('=== DATOS DE ACCESO ===')
+      console.log('Employee ID (documento):', accessData.employeeID)
+      console.log('Employee Code:', accessData.employeeCode)
+      console.log('Access Type:', accessData.accessType)
       
       const endpoint = formData.accessType === 'ENTRY' ? '/access/usercheckin' : '/access/usercheckout'
       const fullUrl = `${api.defaults.baseURL}${endpoint}`
@@ -304,13 +320,19 @@ function AccessControl() {
   return (
     <Container maxWidth="lg">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Control de Acceso de Empleados
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Registra las entradas y salidas de los empleados del sistema
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box>
+            <Typography variant="h4" component="h1" gutterBottom>
+              Control de Acceso de Empleados
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Registra las entradas y salidas de los empleados del sistema
+            </Typography>
+          </Box>
+          <HelpIcon 
+            title="En esta sección puedes registrar los accesos de los empleados (entradas y salidas). Un empleado debe tener una entrada registrada antes de poder registrar una salida. Todos los campos son obligatorios."
+            placement="right"
+          />
         </Box>
         <Button
           variant="contained"
@@ -323,27 +345,24 @@ function AccessControl() {
         </Button>
       </Box>
 
-      <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
-        <Typography variant="body2">
-          <strong>¿Cómo registrar un acceso?</strong>
-        </Typography>
-        <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-          <strong>1. Entrada (INGRESO):</strong> Selecciona un empleado, elige "Entrada", ingresa la ubicación y el ID del dispositivo, luego haz clic en "Registrar Acceso".
-          <br />
-          <strong>2. Salida (EGRESO):</strong> Para registrar una salida, el empleado debe tener previamente una entrada registrada. Selecciona el mismo empleado, elige "Salida", completa los datos y registra.
-          <br />
-          <strong>Nota:</strong> Un empleado no puede tener dos entradas consecutivas. Primero debe registrar su salida antes de poder registrar una nueva entrada.
-        </Typography>
-      </Alert>
-
       {accessRecords.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No hay registros de acceso
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Los registros de acceso aparecerán aquí una vez que comiences a registrar entradas y salidas de empleados.
-          </Typography>
+        <Paper sx={{ p: 0, border: 'none', boxShadow: 'none' }}>
+          <EmptyState
+            icon={<HistoryIcon />}
+            title="No hay registros de acceso"
+            description="Los registros de acceso aparecerán aquí una vez que comiences a registrar entradas y salidas de empleados."
+            action={
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpen}
+                sx={{ mt: 2 }}
+                size="large"
+              >
+                Registrar Primer Acceso
+              </Button>
+            }
+          />
         </Paper>
       ) : (
         <TableContainer component={Paper}>
@@ -431,162 +450,250 @@ function AccessControl() {
           </Box>
         </DialogTitle>
         <DialogContent>
-          <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
-            <Typography variant="body2" component="div">
-              <strong>Pasos para Registrar un Acceso:</strong>
-              <ol style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                <li><strong>Selecciona el empleado</strong> del listado desplegable</li>
-                <li><strong>Elige el tipo:</strong> Entrada (INGRESO) o Salida (EGRESO)</li>
-                <li><strong>Escribe o selecciona la ubicación</strong> (puedes escribir directamente o abrir la lista desplegable para seleccionar una usada anteriormente)</li>
-                <li><strong>Escribe o selecciona el dispositivo</strong> (puedes escribir directamente o abrir la lista desplegable para seleccionar uno usado anteriormente)</li>
-                <li><strong>Haz clic en "Registrar Acceso"</strong></li>
-              </ol>
-              <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
-                Nota: Para ubicación y dispositivo, puedes escribir un valor nuevo o hacer clic en el campo para ver una lista de valores usados previamente.
+          <Box
+            sx={{
+              mb: 3,
+              p: 2,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(66, 165, 245, 0.05) 100%)',
+              border: '1px solid rgba(25, 118, 210, 0.15)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <InfoIcon color="primary" fontSize="small" />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                Pasos para Registrar un Acceso
               </Typography>
-            </Typography>
-          </Alert>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {[
+                { step: 1, text: 'Selecciona el empleado del listado desplegable' },
+                { step: 2, text: 'Elige el tipo: Entrada (INGRESO) o Salida (EGRESO)' },
+                { step: 3, text: 'Escribe o selecciona la ubicación (puedes escribir directamente o seleccionar una usada anteriormente)' },
+                { step: 4, text: 'Escribe o selecciona el dispositivo (puedes escribir directamente o seleccionar uno usado anteriormente)' },
+                { step: 5, text: 'Haz clic en "Registrar Acceso"' },
+              ].map((item) => (
+                <Box key={item.step} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      background: 'primary.main',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.step}
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, pt: 0.25 }}>
+                    {item.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+            <Box
+              sx={{
+                mt: 2,
+                pt: 2,
+                borderTop: '1px solid rgba(25, 118, 210, 0.1)',
+                display: 'flex',
+                gap: 1,
+                alignItems: 'flex-start',
+              }}
+            >
+              <WarningIcon sx={{ color: 'warning.main', fontSize: '1.2rem', flexShrink: 0, mt: 0.1 }} />
+              <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                <strong>Tip:</strong> Para ubicación y dispositivo, puedes escribir un valor nuevo o hacer clic en el campo 
+                para ver una lista de valores usados previamente.
+              </Typography>
+            </Box>
+          </Box>
           
           <Divider sx={{ my: 2 }} />
 
-          <FormControl fullWidth margin="normal" required>
-            <InputLabel id="employee-select-label">Selecciona el Empleado *</InputLabel>
-            <Select
-              labelId="employee-select-label"
-              id="employee-select"
-              value={formData.employeeId || ''}
-              label="Selecciona el Empleado *"
-              onChange={(e) => handleEmployeeChange(e.target.value)}
-              displayEmpty
-            >
-              {employees.length === 0 ? (
-                <MenuItem value="" disabled>
-                  <em>No hay empleados disponibles. Por favor crea un empleado primero.</em>
-                </MenuItem>
-              ) : (
-                employees.map((employee) => (
-                  <MenuItem key={employee.id} value={employee.id}>
-                    <Box>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                        {(employee.firstname || employee.firstName) || ''} {(employee.lastname || employee.lastName) || ''}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Código: {employee.employeeCode || 'Sin código'} | Documento: {employee.document || 'Sin documento'}
-                      </Typography>
-                    </Box>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel id="employee-select-label">Selecciona el Empleado *</InputLabel>
+              <Select
+                labelId="employee-select-label"
+                id="employee-select"
+                value={formData.employeeId || ''}
+                label="Selecciona el Empleado *"
+                onChange={(e) => handleEmployeeChange(e.target.value)}
+                displayEmpty
+              >
+                {employees.length === 0 ? (
+                  <MenuItem value="" disabled>
+                    <em>No hay empleados disponibles. Por favor crea un empleado primero.</em>
                   </MenuItem>
-                ))
+                ) : (
+                  employees.map((employee) => (
+                    <MenuItem key={employee.id} value={employee.id}>
+                      <Box>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                          {(employee.firstname || employee.firstName) || ''} {(employee.lastname || employee.lastName) || ''}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Código: {employee.employeeCode || 'Sin código'} | Documento: {employee.document || 'Sin documento'}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+              <FormHelperText>
+                {formData.employeeID 
+                  ? `Empleado seleccionado - Documento: ${formData.employeeID}`
+                  : 'Debes seleccionar un empleado de la lista desplegable'}
+              </FormHelperText>
+            </FormControl>
+            <Box sx={{ mt: 3 }}>
+              <HelpIcon 
+                title="Selecciona el empleado para el cual vas a registrar el acceso. Solo aparecen empleados activos en el sistema. Si no ves empleados, primero créalos en la sección 'Empleados'."
+                placement="right"
+              />
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel id="access-type-label">Tipo de Acceso *</InputLabel>
+              <Select
+                labelId="access-type-label"
+                id="access-type-select"
+                value={formData.accessType}
+                label="Tipo de Acceso *"
+                onChange={(e) => setFormData({ ...formData, accessType: e.target.value })}
+              >
+                <MenuItem value="ENTRY">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon color="success" fontSize="small" />
+                    <Typography>Entrada (INGRESO)</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="EXIT">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <WarningIcon color="warning" fontSize="small" />
+                    <Typography>Salida (EGRESO)</Typography>
+                  </Box>
+                </MenuItem>
+              </Select>
+              <FormHelperText>
+                {formData.accessType === 'ENTRY' 
+                  ? 'Registra el ingreso del empleado al sistema'
+                  : 'Registra la salida del empleado del sistema'}
+              </FormHelperText>
+            </FormControl>
+            <Box sx={{ mt: 3 }}>
+              <HelpIcon 
+                title="ENTRADA: Registra cuando el empleado ingresa al sistema. Un empleado no puede tener dos entradas consecutivas sin una salida previa. SALIDA: Registra cuando el empleado sale del sistema. El empleado debe tener una entrada previa para poder registrar una salida."
+                placement="right"
+              />
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <Autocomplete
+              freeSolo
+              options={availableLocations}
+              value={formData.location || ''}
+              onInputChange={(event, newValue) => {
+                setFormData({ ...formData, location: newValue })
+              }}
+              onChange={(event, newValue) => {
+                setFormData({ ...formData, location: newValue || '' })
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Ubicación *"
+                  margin="normal"
+                  required
+                  fullWidth
+                  helperText={
+                    formData.location 
+                      ? (availableLocations.includes(formData.location) 
+                          ? "Ubicación del historial - Puedes escribir o seleccionar de la lista" 
+                          : "Nueva ubicación - Se agregará al historial")
+                      : availableLocations.length > 0
+                      ? "Escribe una ubicación nueva o selecciona una de la lista desplegable"
+                      : "Escribe la ubicación donde se registra el acceso"
+                  }
+                  placeholder={availableLocations.length > 0 ? "Escribe o selecciona" : "Ej: Tunja, Bogotá"}
+                />
               )}
-            </Select>
-            <FormHelperText>
-              {formData.employeeID 
-                ? `Empleado seleccionado - Documento: ${formData.employeeID}`
-                : 'Debes seleccionar un empleado de la lista desplegable'}
-            </FormHelperText>
-          </FormControl>
-
-          <FormControl fullWidth margin="normal" required>
-            <InputLabel id="access-type-label">Tipo de Acceso *</InputLabel>
-            <Select
-              labelId="access-type-label"
-              id="access-type-select"
-              value={formData.accessType}
-              label="Tipo de Acceso *"
-              onChange={(e) => setFormData({ ...formData, accessType: e.target.value })}
-            >
-              <MenuItem value="ENTRY">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleIcon color="success" fontSize="small" />
-                  <Typography>Entrada (INGRESO)</Typography>
-                </Box>
-              </MenuItem>
-              <MenuItem value="EXIT">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <WarningIcon color="warning" fontSize="small" />
-                  <Typography>Salida (EGRESO)</Typography>
-                </Box>
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {formData.accessType === 'ENTRY' 
-                ? 'Registra el ingreso del empleado al sistema'
-                : 'Registra la salida del empleado del sistema'}
-            </FormHelperText>
-          </FormControl>
-
-          <Autocomplete
-            freeSolo
-            options={availableLocations}
-            value={formData.location || ''}
-            onInputChange={(event, newValue) => {
-              setFormData({ ...formData, location: newValue })
-            }}
-            onChange={(event, newValue) => {
-              setFormData({ ...formData, location: newValue || '' })
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Ubicación *"
-                margin="normal"
-                required
-                helperText={
-                  formData.location 
-                    ? (availableLocations.includes(formData.location) 
-                        ? "Ubicación del historial - Puedes escribir o seleccionar de la lista" 
-                        : "Nueva ubicación - Se agregará al historial")
-                    : availableLocations.length > 0
-                    ? "Escribe una ubicación nueva o selecciona una de la lista desplegable"
-                    : "Escribe la ubicación donde se registra el acceso"
-                }
-                placeholder={availableLocations.length > 0 ? "Escribe o selecciona" : "Ej: Tunja, Bogotá"}
+            />
+            <Box sx={{ mt: 3 }}>
+              <HelpIcon 
+                title="Ingresa la ubicación física donde se registra el acceso (ej: 'Oficina Principal', 'Sede Norte', 'Puerta 1'). Puedes escribir una nueva ubicación o seleccionar una del historial. Las ubicaciones usadas anteriormente aparecerán en la lista desplegable."
+                placement="right"
               />
-            )}
-          />
+            </Box>
+          </Box>
 
-          <Autocomplete
-            freeSolo
-            options={availableDevices}
-            value={formData.deviceId || ''}
-            onInputChange={(event, newValue) => {
-              setFormData({ ...formData, deviceId: newValue })
-            }}
-            onChange={(event, newValue) => {
-              setFormData({ ...formData, deviceId: newValue || '' })
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="ID de Dispositivo *"
-                margin="normal"
-                required
-                helperText={
-                  formData.deviceId 
-                    ? (availableDevices.includes(formData.deviceId) 
-                        ? "Dispositivo del historial - Puedes escribir o seleccionar de la lista" 
-                        : "Nuevo dispositivo - Se agregará al historial")
-                    : availableDevices.length > 0
-                    ? "Escribe un dispositivo nuevo o selecciona uno de la lista desplegable"
-                    : "Escribe el ID del dispositivo que registra el acceso"
-                }
-                placeholder={availableDevices.length > 0 ? "Escribe o selecciona" : "Ej: 1, Puerta 1"}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <Autocomplete
+              freeSolo
+              options={availableDevices}
+              value={formData.deviceId || ''}
+              onInputChange={(event, newValue) => {
+                setFormData({ ...formData, deviceId: newValue })
+              }}
+              onChange={(event, newValue) => {
+                setFormData({ ...formData, deviceId: newValue || '' })
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="ID de Dispositivo *"
+                  margin="normal"
+                  required
+                  fullWidth
+                  helperText={
+                    formData.deviceId 
+                      ? (availableDevices.includes(formData.deviceId) 
+                          ? "Dispositivo del historial - Puedes escribir o seleccionar de la lista" 
+                          : "Nuevo dispositivo - Se agregará al historial")
+                      : availableDevices.length > 0
+                      ? "Escribe un dispositivo nuevo o selecciona uno de la lista desplegable"
+                      : "Escribe el ID del dispositivo que registra el acceso"
+                  }
+                  placeholder={availableDevices.length > 0 ? "Escribe o selecciona" : "Ej: 1, Puerta 1"}
+                />
+              )}
+            />
+            <Box sx={{ mt: 3 }}>
+              <HelpIcon 
+                title="Ingresa el identificador del dispositivo que registra el acceso (ej: 'Terminal 1', 'Lector RFID-001', 'Puerta Principal'). Puedes escribir un nuevo ID o seleccionar uno del historial. Los dispositivos usados anteriormente aparecerán en la lista desplegable."
+                placement="right"
               />
-            )}
-          />
+            </Box>
+          </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleClose} variant="outlined">
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button 
+            onClick={handleClose} 
+            variant="outlined"
+            size="large"
+          >
             Cancelar
           </Button>
-          <Button 
+          <LoadingButton
             onClick={handleSubmit} 
             variant="contained" 
             size="large"
             disabled={!formData.employeeId || !formData.location || !formData.deviceId}
             startIcon={<CheckCircleIcon />}
+            loading={false}
           >
             Registrar Acceso
-          </Button>
+          </LoadingButton>
         </DialogActions>
       </Dialog>
     </Container>
