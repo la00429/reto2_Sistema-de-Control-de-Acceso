@@ -308,9 +308,30 @@ cd ../employee-service && mvn test
 
 ## Monitoreo
 
-- **Prometheus**: `http://localhost:9090`
-- **Grafana**: `http://localhost:3000`
-- **RabbitMQ Management**: `http://localhost:15673`
+El sistema incluye monitoreo completo con Prometheus y Grafana para visualizar métricas en tiempo real, detectar problemas y analizar el rendimiento del sistema.
+
+### Herramientas de Monitoreo
+
+- **Prometheus**: `http://localhost:9090` - Base de datos de métricas
+- **Grafana**: `http://localhost:3000` - Visualización de métricas (usuario: `admin`, contraseña: `adminpassword`)
+- **RabbitMQ Management**: `http://localhost:15673` - Gestión de colas de mensajes (usuario: `admin`, contraseña: `adminpassword`)
+
+### Dashboards Disponibles en Grafana
+
+1. **Services Health Dashboard**: Estado de salud, latencia HTTP y uso de memoria de todos los servicios
+2. **SAGA Orchestrator Dashboard**: Monitoreo de transacciones distribuidas (iniciadas, completadas, compensadas, fallidas)
+3. **RabbitMQ Dashboard**: Estado de colas, mensajes procesados y Dead Letter Queue
+
+### Métricas Monitoreadas
+
+- **Salud de servicios**: Estado UP/DOWN de cada microservicio
+- **Rendimiento HTTP**: Latencia, tasa de solicitudes, errores
+- **Métricas de negocio**: Registros de acceso creados, validaciones fallidas, alertas enviadas
+- **Transacciones SAGA**: Sagas iniciadas, completadas, compensadas, tiempos de ejecución
+- **RabbitMQ**: Mensajes en cola, tasa de procesamiento, mensajes fallidos
+- **Recursos del sistema**: Memoria JVM, CPU, threads
+
+Para más información sobre cómo usar Grafana, consulta el archivo `MONITOREO_GRAFANA.md`.
 
 ## Acceso Rápido
 
