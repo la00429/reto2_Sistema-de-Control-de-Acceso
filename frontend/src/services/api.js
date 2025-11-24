@@ -1,14 +1,11 @@
 import axios from 'axios'
 
 // Configuración del API Gateway
-// En desarrollo, usar el proxy de Vite para evitar problemas de CORS
+// En desarrollo y producción, usar rutas relativas que serán manejadas por el proxy
 const getBaseURL = () => {
-  if (import.meta.env.DEV) {
-    // En desarrollo, usar el proxy de Vite
-    return '/api'
-  }
-  // En producción, usar la URL completa
-  return import.meta.env.VITE_API_URL || 'http://localhost:8080'
+  // Usar siempre rutas relativas que serán manejadas por Nginx en producción
+  // o por el proxy de Vite en desarrollo
+  return '/api'
 }
 
 const api = axios.create({
