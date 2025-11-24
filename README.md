@@ -85,12 +85,12 @@ docker-compose up -d --build
 
 Este comando iniciará:
 - **Bases de Datos**:
-  - MySQL (Puerto 3307)
-  - MongoDB (Puerto 27018)
+- MySQL (Puerto 3307)
+- MongoDB (Puerto 27018)
 - **Infraestructura**:
-  - RabbitMQ (Puerto 5673, Management: 15673)
-  - Prometheus (Puerto 9090)
-  - Grafana (Puerto 3000)
+- RabbitMQ (Puerto 5673, Management: 15673)
+- Prometheus (Puerto 9090)
+- Grafana (Puerto 3000)
 - **Microservicios Backend**:
   - API Gateway (Puerto 8080)
   - Login Service (Puerto 8081)
@@ -308,9 +308,41 @@ cd ../employee-service && mvn test
 
 ## Monitoreo
 
-- **Prometheus**: `http://localhost:9090`
-- **Grafana**: `http://localhost:3000`
-- **RabbitMQ Management**: `http://localhost:15673`
+### RabbitMQ
+**Para qué sirve**: Sistema de mensajería asíncrona entre microservicios. Cuando un servicio necesita comunicarse con otro sin esperar respuesta inmediata, envía mensajes a través de RabbitMQ.
+
+**Qué ver**: 
+- **URL**: http://localhost:15673 (usuario: `admin`, contraseña: `adminpassword`)
+- **Verás**: Colas de mensajes, mensajes en cola, mensajes procesados, conexiones activas
+- **Útil para**: Detectar si hay mensajes acumulados o si algún servicio no está procesando mensajes
+
+### Prometheus
+**Para qué sirve**: Recolecta y almacena métricas de todos los servicios (cada 15 segundos). Es la base de datos de métricas.
+
+**Qué ver**:
+- **URL**: http://localhost:9090
+- **Status → Targets**: Verifica que todos los servicios estén en estado "UP" (verde). Si alguno está "DOWN":
+  1. Verifica que el servicio esté corriendo: `docker-compose ps`
+  2. Verifica que el endpoint funcione: `curl http://localhost:808X/actuator/prometheus`
+  3. Revisa los logs del servicio: `docker-compose logs [nombre-servicio]`
+- **Graph**: Prueba consultas como `up` para ver el estado de todos los servicios
+- **Útil para**: Verificar si los servicios están enviando métricas, consultar métricas directamente
+
+### Grafana
+**Para qué sirve**: Visualiza las métricas de Prometheus en gráficos y dashboards.
+
+**Qué ver**:
+- **URL**: http://localhost:3000 (usuario: `admin`, contraseña: `adminpassword`)
+- **Configuración automática**: El datasource de Prometheus se configura automáticamente al iniciar
+- **Crear dashboard**: Dashboards → New → Add visualization → Selecciona Prometheus
+- **Consultas útiles**:
+  - `up{job="api-gateway"}` - Estado del API Gateway (1=UP, 0=DOWN)
+  - `up` - Estado de todos los servicios
+  - `rate(http_server_requests_seconds_count[5m])` - Tasa de solicitudes HTTP por segundo
+  - `histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))` - Latencia P95
+  - `jvm_memory_used_bytes{area="heap"}` - Memoria JVM usada
+  - `access_records_created_total` - Total de registros de acceso creados
+- **Útil para**: Ver gráficos en tiempo real, detectar servicios lentos o caídos
 
 ## Acceso Rápido
 

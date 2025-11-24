@@ -11,6 +11,7 @@ target/
 .mvn/
 mvnw
 mvnw.cmd
+*.jar.original
 
 # Node
 node_modules/
@@ -49,6 +50,19 @@ logs/
 # OS
 Thumbs.db
 .DS_Store
+
+# Environment files
+.env
+.env.production
+
+# SSL Certificates
+letsencrypt/
+*.pem
+*.key
+*.crt
+
+# Build artifacts
+package-lock.json
 
 
 
