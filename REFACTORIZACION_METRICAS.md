@@ -83,3 +83,4 @@ histogram_quantile(0.95, rate(access_registration_duration_seconds_bucket[5m]))
 3. Configurar alertas en Prometheus para valores anómalos
 
 
+
