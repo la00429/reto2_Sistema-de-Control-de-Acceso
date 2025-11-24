@@ -19,7 +19,7 @@ El sistema está compuesto por:
   - MySQL (Puerto 3307) - Datos transaccionales
   - MongoDB (Puerto 27018) - Cache y sesiones
 - **Infraestructura**:
-  - RabbitMQ (Puerto 5672) - Mensajería asíncrona
+  - RabbitMQ (Puerto 5673) - Mensajería asíncrona
   - Prometheus (Puerto 9090) - Métricas
   - Grafana (Puerto 3000) - Visualización
 
@@ -69,61 +69,41 @@ Los documentos OpenAPI están disponibles en:
 
 ## Requisitos
 
-- Java 17+
-- Node.js 18+
-- Docker y Docker Compose
-- Maven 3.8+
+- **Docker y Docker Compose** (obligatorio para backend e infraestructura)
+- **Node.js 18+** (solo para ejecutar el frontend en local)
+- **Java 17+ y Maven 3.8+** (opcional, solo si necesitas compilar los servicios manualmente)
 
 ## Instalación
 
-### 1. Iniciar Infraestructura
+### 1. Iniciar todos los servicios backend e infraestructura con Docker
+
+**Importante**: Todos los microservicios backend se ejecutan en Docker. Solo el frontend se ejecuta en local.
+
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
-Esto iniciará:
-- MySQL (Puerto 3307)
-- MongoDB (Puerto 27018)
-- RabbitMQ (Puerto 5673, Management: 15673)
-- Prometheus (Puerto 9090)
-- Grafana (Puerto 3000)
+Este comando iniciará:
+- **Bases de Datos**:
+  - MySQL (Puerto 3307)
+  - MongoDB (Puerto 27018)
+- **Infraestructura**:
+  - RabbitMQ (Puerto 5673, Management: 15673)
+  - Prometheus (Puerto 9090)
+  - Grafana (Puerto 3000)
+- **Microservicios Backend**:
+  - API Gateway (Puerto 8080)
+  - Login Service (Puerto 8081)
+  - Employee Service (Puerto 8082)
+  - Access Control Service (Puerto 8083)
+  - Alert Service (Puerto 8084)
+  - Auth Service (Puerto 8085)
+  - SAGA Orchestrator (Puerto 8086)
 
-### 2. Compilar Microservicios
-```bash
-# Compilar cada servicio
-cd api-gateway && mvn clean install
-cd ../login-service && mvn clean install
-cd ../auth-service && mvn clean install
-cd ../employee-service && mvn clean install
-cd ../access-control-service && mvn clean install
-cd ../alert-service && mvn clean install
-cd ../saga-service && mvn clean install
-```
+### 2. Iniciar Frontend (solo en local)
 
-### 3. Iniciar Servicios (en orden)
+Una vez que todos los servicios de Docker estén corriendo, inicia el frontend en local:
 
-**Opción A: Desde IDE**
-1. Alert Service
-2. Auth Service
-3. Employee Service
-4. Login Service
-5. Access Control Service
-6. SAGA Orchestrator
-7. API Gateway
-
-**Opción B: Desde línea de comandos**
-```bash
-# En terminales separadas
-cd alert-service && mvn spring-boot:run
-cd auth-service && mvn spring-boot:run
-cd employee-service && mvn spring-boot:run
-cd login-service && mvn spring-boot:run
-cd access-control-service && mvn spring-boot:run
-cd saga-service && mvn spring-boot:run
-cd api-gateway && mvn spring-boot:run
-```
-
-### 4. Iniciar Frontend
 ```bash
 cd frontend
 npm install
@@ -132,15 +112,46 @@ npm run dev
 
 El frontend estará disponible en: `http://localhost:3001` (puerto 3000 está ocupado por Grafana)
 
+### 3. Verificar que todo esté corriendo
+
+Puedes verificar el estado de los contenedores con:
+
+```bash
+docker-compose ps
+```
+
+Para ver los logs de un servicio específico:
+
+```bash
+docker-compose logs -f [nombre-del-servicio]
+# Ejemplo: docker-compose logs -f api-gateway
+```
+
 ## Acceso a la Aplicación
 
-### Frontend Web
+### Paso 1: Iniciar servicios backend
+```bash
+docker-compose up -d --build
+```
+
+Espera a que todos los contenedores estén corriendo (puedes verificar con `docker-compose ps`).
+
+### Paso 2: Iniciar frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Paso 3: Acceder a la aplicación
+
 Una vez iniciado el frontend, accede a:
 - **URL**: http://localhost:3001
 - **Página de Login**: http://localhost:3001/login
 
 ### Credenciales de Prueba
-Para acceder al sistema, primero debes crear un usuario usando el endpoint de registro o directamente en la base de datos.
+
+Para acceder al sistema, primero debes crear un usuario usando el endpoint de registro:
 
 **Crear usuario mediante API:**
 ```bash
@@ -159,18 +170,18 @@ Luego inicia sesión con:
 - **Contraseña**: admin123
 
 ### Flujo de Autenticación
-1. Accede a http://localhost:3000/login
+1. Accede a http://localhost:3001/login
 2. Ingresa tus credenciales
 3. El sistema generará un código MFA de 6 dígitos
 4. Ingresa el código MFA para completar la autenticación
 5. Serás redirigido al Dashboard
 
 ### Páginas Disponibles
-- **Login**: http://localhost:3000/login
-- **Dashboard**: http://localhost:3000/dashboard
-- **Empleados**: http://localhost:3000/employees
-- **Control de Acceso**: http://localhost:3000/access-control
-- **Reportes**: http://localhost:3000/reports
+- **Login**: http://localhost:3001/login
+- **Dashboard**: http://localhost:3001/dashboard
+- **Empleados**: http://localhost:3001/employees
+- **Control de Acceso**: http://localhost:3001/access-control
+- **Reportes**: http://localhost:3001/reports
 
 ## Estructura del Proyecto
 
@@ -267,8 +278,8 @@ Los servicios usan configuración por defecto. Para producción, crear archivos 
 - Base de datos: `login_db`
 
 **RabbitMQ:**
-- Puerto: `5673` (cambiado de 5672 para evitar conflictos)
-- Management UI: `http://localhost:15673` (cambiado de 15672)
+- Puerto: `5673` (mapeado desde 5672 interno)
+- Management UI: `http://localhost:15673` (mapeado desde 15672 interno)
 - Usuario: `admin`
 - Contraseña: `adminpassword`
 
@@ -278,8 +289,18 @@ Los servicios usan configuración por defecto. Para producción, crear archivos 
 
 ## Testing
 
+### Ejecutar tests de los servicios
+
+Si necesitas ejecutar los tests de los microservicios, puedes hacerlo de dos formas:
+
+**Opción 1: Ejecutar tests dentro del contenedor Docker**
 ```bash
-# Ejecutar tests de cada servicio
+docker-compose exec [nombre-servicio] mvn test
+# Ejemplo: docker-compose exec login-service mvn test
+```
+
+**Opción 2: Ejecutar tests localmente (requiere Java y Maven instalados)**
+```bash
 cd login-service && mvn test
 cd ../employee-service && mvn test
 # ... etc
@@ -324,11 +345,48 @@ Luego inicia sesión en http://localhost:3001/login con:
 
 ### Problemas Comunes
 
-1. **Puertos ocupados**: Verificar que los puertos estén libres
-2. **Bases de datos no conectan**: Verificar que Docker esté corriendo
-3. **RabbitMQ no responde**: Verificar credenciales y puerto
-4. **Frontend no se conecta**: Verificar que el API Gateway esté corriendo en puerto 8080
-5. **Error MFA**: El código MFA se muestra en la consola del Login Service (no en el navegador)
+1. **Puertos ocupados**: Verificar que los puertos estén libres antes de ejecutar `docker-compose up`
+   ```bash
+   # Verificar si un puerto está en uso (ejemplo para puerto 8080)
+   netstat -ano | findstr :8080
+   ```
+
+2. **Servicios no inician**: Verificar los logs de Docker
+   ```bash
+   docker-compose logs [nombre-servicio]
+   # Ver todos los logs: docker-compose logs
+   ```
+
+3. **Bases de datos no conectan**: Verificar que los contenedores estén corriendo
+   ```bash
+   docker-compose ps
+   ```
+
+4. **Reiniciar un servicio específico**:
+   ```bash
+   docker-compose restart [nombre-servicio]
+   ```
+
+5. **Reconstruir todos los servicios**:
+   ```bash
+   docker-compose down
+   docker-compose up -d --build
+   ```
+
+6. **Frontend no se conecta al backend**: 
+   - Verificar que el API Gateway esté corriendo: `docker-compose ps api-gateway`
+   - Verificar que el puerto 8080 esté accesible: `http://localhost:8080/actuator/health`
+
+7. **Error MFA**: El código MFA se muestra en los logs del Login Service
+   ```bash
+   docker-compose logs -f login-service
+   ```
+
+8. **Limpiar todo y empezar de nuevo**:
+   ```bash
+   docker-compose down -v  # Elimina también los volúmenes
+   docker-compose up -d --build
+   ```
 
 ## Licencia
 
