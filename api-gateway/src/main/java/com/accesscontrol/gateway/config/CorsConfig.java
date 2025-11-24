@@ -16,7 +16,7 @@ public class CorsConfig {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
         // Permitir orígenes específicos (no usar * con allowCredentials)
-        // Incluir variantes IPv6 e IPv4
+        // Incluir variantes IPv6 e IPv4 y dominios de producción
         corsConfig.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
             "http://localhost:3001",
@@ -26,7 +26,11 @@ public class CorsConfig {
             "http://127.0.0.1:5173",
             "http://[::1]:3000",
             "http://[::1]:3001",
-            "http://[::1]:5173"
+            "http://[::1]:5173",
+            "https://pnaltsw.site",
+            "https://www.pnaltsw.site",
+            "http://pnaltsw.site",
+            "http://www.pnaltsw.site"
         ));
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
         corsConfig.setAllowedHeaders(Arrays.asList("*"));

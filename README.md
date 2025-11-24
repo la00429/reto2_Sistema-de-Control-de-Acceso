@@ -259,27 +259,59 @@ Luego inicia sesión con:
 
 ## Configuración
 
-### Variables de Entorno
+### Variables de Entorno para Producción
 
-Los servicios usan configuración por defecto. Para producción, crear archivos `application-prod.yml` en cada servicio.
+Para producción, crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
-### Credenciales por Defecto
+```bash
+# IP del VPS
+VPS_IP=142.93.248.100
+
+# Dominio principal
+DOMAIN=pnaltsw.site
+
+# Base de datos MySQL
+MYSQL_ROOT_PASSWORD=SuperSecureRootPassword2024!
+MYSQL_USER=appuser
+MYSQL_PASSWORD=AppUserSecurePassword2024!
+
+# Base de datos MongoDB
+MONGO_ROOT_USER=admin
+MONGO_ROOT_PASSWORD=MongoSecurePassword2024!
+
+# RabbitMQ
+RABBITMQ_USER=admin
+RABBITMQ_PASSWORD=RabbitMQSecurePassword2024!
+
+# Grafana
+GRAFANA_USER=admin
+GRAFANA_PASSWORD=GrafanaSecurePassword2024!
+
+# Let's Encrypt (cambia por tu email real)
+LETSENCRYPT_EMAIL=admin@pnaltsw.site
+
+# Traefik Dashboard (formato: usuario:hash_de_contraseña)
+# Genera con: ./generate-traefik-password.sh
+TRAEFIK_DASHBOARD_AUTH=admin:$$2y$$05$$Pv0ZEpv6vMBauSXfUbzRuu1W4.VlEjml42udd3s0J669JhwyQ4dFq
+```
+
+### Credenciales por Defecto (Desarrollo Local)
 
 **MySQL:**
-- Puerto: `3307` (cambiado de 3306 para evitar conflictos)
+- Puerto: `3307`
 - Usuario: `appuser`
 - Contraseña: `apppassword`
 - Base de datos: `access_control_db`
 
 **MongoDB:**
-- Puerto: `27018` (cambiado de 27017 para evitar conflictos)
+- Puerto: `27018`
 - Usuario: `admin`
 - Contraseña: `adminpassword`
 - Base de datos: `login_db`
 
 **RabbitMQ:**
-- Puerto: `5673` (mapeado desde 5672 interno)
-- Management UI: `http://localhost:15673` (mapeado desde 15672 interno)
+- Puerto: `5673`
+- Management UI: `http://localhost:15673`
 - Usuario: `admin`
 - Contraseña: `adminpassword`
 
@@ -317,32 +349,45 @@ cd ../employee-service && mvn test
 - **Útil para**: Detectar si hay mensajes acumulados o si algún servicio no está procesando mensajes
 
 ### Prometheus
-**Para qué sirve**: Recolecta y almacena métricas de todos los servicios (cada 15 segundos). Es la base de datos de métricas.
+**Para qué sirve**: Recolecta y almacena métricas de todos los servicios (cada 15 segundos).
 
-**Qué ver**:
-- **URL**: http://localhost:9090
-- **Status → Targets**: Verifica que todos los servicios estén en estado "UP" (verde). Si alguno está "DOWN":
-  1. Verifica que el servicio esté corriendo: `docker-compose ps`
-  2. Verifica que el endpoint funcione: `curl http://localhost:808X/actuator/prometheus`
-  3. Revisa los logs del servicio: `docker-compose logs [nombre-servicio]`
-- **Graph**: Prueba consultas como `up` para ver el estado de todos los servicios
-- **Útil para**: Verificar si los servicios están enviando métricas, consultar métricas directamente
+**Cómo ver datos:**
+1. Abre http://localhost:9090
+2. En el campo grande de consulta, escribe: `up`
+3. Haz clic en **Execute** (botón azul)
+4. Deberías ver una tabla con todos los servicios y su estado (up=1 significa funcionando)
+
+**Verificar que está scrapeando correctamente:**
+- Ve a **Status** → **Targets** (menú superior)
+- Todos los servicios deben estar en estado **"UP"** (verde)
+- Si alguno está "DOWN", revisa los logs: `docker-compose logs [nombre-servicio]`
 
 ### Grafana
 **Para qué sirve**: Visualiza las métricas de Prometheus en gráficos y dashboards.
 
-**Qué ver**:
-- **URL**: http://localhost:3000 (usuario: `admin`, contraseña: `adminpassword`)
-- **Configuración automática**: El datasource de Prometheus se configura automáticamente al iniciar
-- **Crear dashboard**: Dashboards → New → Add visualization → Selecciona Prometheus
-- **Consultas útiles**:
-  - `up{job="api-gateway"}` - Estado del API Gateway (1=UP, 0=DOWN)
-  - `up` - Estado de todos los servicios
-  - `rate(http_server_requests_seconds_count[5m])` - Tasa de solicitudes HTTP por segundo
-  - `histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))` - Latencia P95
-  - `jvm_memory_used_bytes{area="heap"}` - Memoria JVM usada
-  - `access_records_created_total` - Total de registros de acceso creados
-- **Útil para**: Ver gráficos en tiempo real, detectar servicios lentos o caídos
+**Cómo ver métricas (paso a paso):**
+1. Abre http://localhost:3000 (usuario: `admin`, contraseña: `adminpassword`)
+2. Haz clic en **Dashboards** → **Create dashboard** (botón azul grande)
+3. Haz clic en **Add visualization**
+4. Verifica que el datasource sea **Prometheus** (debe decir "Prome" o "Prometheus" arriba)
+5. En el campo de consulta (debajo de "Kick start your query"), escribe: `up`
+6. Haz clic en el botón azul **Run queries** (abajo a la derecha)
+7. Deberías ver un gráfico con líneas en el valor 1.0 (cada servicio es una línea de color diferente)
+
+**Qué deberías ver:**
+- Un gráfico con líneas horizontales en el valor 1.0
+- Una leyenda abajo con cada servicio (api-gateway, login-service, etc.)
+- El gráfico se actualiza cada 15 segundos automáticamente
+- Puedes cambiar el rango de tiempo arriba (última hora, último día, etc.)
+
+**Si no ves datos:**
+- Primero verifica Prometheus: http://localhost:9090 → **Status** → **Targets** (todos deben estar "UP" en verde)
+- Si algún servicio está DOWN, revisa los logs: `docker-compose logs [nombre-servicio]`
+
+**Consultas útiles:**
+- `up` - Estado de todos los servicios (1=UP, 0=DOWN)
+- `rate(http_server_requests_seconds_count[5m])` - Solicitudes HTTP por segundo
+- `jvm_memory_used_bytes{area="heap"}` - Memoria JVM usada
 
 ## Acceso Rápido
 
@@ -405,16 +450,22 @@ Luego inicia sesión en http://localhost:3001/login con:
    docker-compose up -d --build
    ```
 
-6. **Frontend no se conecta al backend**: 
+6. **Error 403 (Forbidden) en producción**:
+   - Verifica que CORS esté configurado con el dominio de producción en `CorsConfig.java`
+   - Verifica que Traefik tenga las rutas correctas configuradas
+   - Revisa los logs de Traefik: `docker-compose -f docker-compose.prod.yml logs traefik`
+   - Revisa los logs del API Gateway: `docker-compose -f docker-compose.prod.yml logs api-gateway`
+
+7. **Frontend no se conecta al backend**: 
    - Verificar que el API Gateway esté corriendo: `docker-compose ps api-gateway`
    - Verificar que el puerto 8080 esté accesible: `http://localhost:8080/actuator/health`
 
-7. **Error MFA**: El código MFA se muestra en los logs del Login Service
+8. **Error MFA**: El código MFA se muestra en los logs del Login Service
    ```bash
    docker-compose logs -f login-service
    ```
 
-8. **Limpiar todo y empezar de nuevo**:
+9. **Limpiar todo y empezar de nuevo**:
    ```bash
    docker-compose down -v  # Elimina también los volúmenes
    docker-compose up -d --build
