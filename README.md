@@ -261,39 +261,25 @@ Luego inicia sesión con:
 
 ### Variables de Entorno para Producción
 
-Para producción, crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+1. Copia el archivo de ejemplo y úsalo como base:
+   ```bash
+   cp .env.example .env
+   ```
+2. Reemplaza los valores de ejemplo por tus credenciales reales. **No subas el archivo `.env` al repositorio.**
 
-```bash
-# IP del VPS
-VPS_IP=142.93.248.100
+Campos principales que debes completar:
 
-# Dominio principal
-DOMAIN=pnaltsw.site
+| Categoría          | Variables clave                                                                              | Ejemplo / Comentario                                   |
+|--------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------|
+| VPS / Dominio      | `VPS_IP`, `DOMAIN`                                                                           | IP pública y dominio configurado en DNS                |
+| MySQL              | `MYSQL_ROOT_PASSWORD`, `MYSQL_USER`, `MYSQL_PASSWORD`                                        | Usa contraseñas fuertes (mínimo 12 caracteres)         |
+| MongoDB            | `MONGO_ROOT_USER`, `MONGO_ROOT_PASSWORD`                                                     | Usuarios distintos para admin y aplicación             |
+| RabbitMQ           | `RABBITMQ_USER`, `RABBITMQ_PASSWORD`                                                         | Crea un usuario dedicado para el proyecto              |
+| Grafana            | `GRAFANA_USER`, `GRAFANA_PASSWORD`                                                           | Cambia la contraseña por defecto inmediatamente        |
+| Let's Encrypt      | `LETSENCRYPT_EMAIL`                                                                          | Email real para recibir avisos de certificados         |
+| Traefik Dashboard  | `TRAEFIK_DASHBOARD_AUTH`                                                                     | Genera el hash con `./generate-traefik-password.sh`    |
 
-# Base de datos MySQL
-MYSQL_ROOT_PASSWORD=SuperSecureRootPassword2024!
-MYSQL_USER=appuser
-MYSQL_PASSWORD=AppUserSecurePassword2024!
-
-# Base de datos MongoDB
-MONGO_ROOT_USER=admin
-MONGO_ROOT_PASSWORD=MongoSecurePassword2024!
-
-# RabbitMQ
-RABBITMQ_USER=admin
-RABBITMQ_PASSWORD=RabbitMQSecurePassword2024!
-
-# Grafana
-GRAFANA_USER=admin
-GRAFANA_PASSWORD=GrafanaSecurePassword2024!
-
-# Let's Encrypt (cambia por tu email real)
-LETSENCRYPT_EMAIL=admin@pnaltsw.site
-
-# Traefik Dashboard (formato: usuario:hash_de_contraseña)
-# Genera con: ./generate-traefik-password.sh
-TRAEFIK_DASHBOARD_AUTH=admin:$$2y$$05$$Pv0ZEpv6vMBauSXfUbzRuu1W4.VlEjml42udd3s0J669JhwyQ4dFq
-```
+> **Tip:** Los valores del ejemplo original eran solo de referencia. Cámbialos antes de desplegar.
 
 ### Credenciales por Defecto (Desarrollo Local)
 
